@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getMemeTemplate } from "@/app/lib/meme-library";
-import { DEFAULT_ROAST_MODEL_ID, getRoastModelOption, ROAST_MODEL_OPTIONS } from "@/app/lib/roast-models";
+import { DEFAULT_ROAST_MODEL_ID, ROAST_MODEL_OPTIONS } from "@/app/lib/roast-models";
 import type { RoastModelId } from "@/app/lib/roast-models";
 import type { RoastAnalysis, RoastIntensity } from "@/app/types/roast";
 
@@ -64,7 +64,6 @@ export function RoasterApp() {
   const [copied, setCopied] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
-  const [isSampleOpen, setIsSampleOpen] = useState(false);
   const [activePriceModel, setActivePriceModel] = useState<RoastModelId | null>(null);
 
   useEffect(
@@ -80,13 +79,7 @@ export function RoasterApp() {
     if (!file) return "PNG, JPG, or WebP under 4 MB";
     return `${file.name} / ${(file.size / 1024 / 1024).toFixed(2)} MB`;
   }, [file]);
-  const selectedModel = useMemo(() => getRoastModelOption(model) ?? ROAST_MODEL_OPTIONS[0], [model]);
-  const advancedSummary = useMemo(() => {
-    const intensityLabel = intensityOptions.find((option) => option.value === intensity)?.label ?? "Spicy";
-    const focusSummary = focusAreas.map((area) => categoryLabels[area] ?? area).join(", ");
-
-    return `${intensityLabel} / ${focusSummary} / ${selectedModel.label}`;
-  }, [focusAreas, intensity, selectedModel.label]);
+  const advancedSummary = "Intensity, focus areas, model";
 
   function handleFiles(files: FileList | null) {
     const nextFile = files?.[0];
@@ -165,20 +158,20 @@ export function RoasterApp() {
           <p className="hero-subcopy">
             Upload a landing page screenshot and get a prioritized UX/copy teardown in 60 seconds.
           </p>
-        </div>
-        <div className="benefit-list" aria-label="Product highlights">
-          <span>
-            <Check aria-hidden="true" />
-            No signup required
-          </span>
-          <span>
-            <Check aria-hidden="true" />
-            Critique in 60 seconds
-          </span>
-          <span>
-            <Check aria-hidden="true" />
-            Prioritized fixes
-          </span>
+          <div className="benefit-list" aria-label="Product highlights">
+            <span>
+              <Check aria-hidden="true" />
+              No signup required
+            </span>
+            <span>
+              <Check aria-hidden="true" />
+              Critique in 60 seconds
+            </span>
+            <span>
+              <Check aria-hidden="true" />
+              Prioritized fixes
+            </span>
+          </div>
         </div>
       </header>
 
@@ -260,7 +253,7 @@ export function RoasterApp() {
               onClick={() => setIsAdvancedOpen((current) => !current)}
             >
               <div>
-                <p className="eyebrow">Advanced settings</p>
+                <p className="eyebrow">Customize the roast</p>
                 <h3>Optional critique controls</h3>
                 <span>{advancedSummary}</span>
               </div>
@@ -370,16 +363,18 @@ export function RoasterApp() {
           </section>
         </div>
 
-        <div className="tool-panel result-panel" aria-live="polite">
+        <div
+          className={`tool-panel result-panel ${
+            isLoading ? "is-loading" : analysis ? "has-results" : file ? "is-ready" : "is-idle"
+          }`}
+          aria-live="polite"
+        >
           {isLoading ? (
             <LoadingState />
           ) : analysis ? (
             <Results analysis={analysis} copied={copied} onCopy={copyText} />
           ) : (
-            <EmptyResults
-              isSampleOpen={isSampleOpen}
-              onToggleSample={() => setIsSampleOpen((current) => !current)}
-            />
+            <EmptyResults isReady={Boolean(file)} />
           )}
         </div>
       </section>
@@ -387,99 +382,22 @@ export function RoasterApp() {
   );
 }
 
-function EmptyResults({
-  isSampleOpen,
-  onToggleSample,
-}: {
-  isSampleOpen: boolean;
-  onToggleSample: () => void;
-}) {
+function EmptyResults({ isReady }: { isReady: boolean }) {
   return (
-    <div className={`empty-results ${isSampleOpen ? "has-sample" : ""}`}>
-      <section className="empty-start" aria-label="Result placeholder">
-        <div className="empty-start-icon" aria-hidden="true">
-          <WandSparkles />
-        </div>
-        <div>
-          <p className="eyebrow">Step 2 / Result</p>
-          <h2>Your roast will appear here.</h2>
-          <p>
-            Upload a screenshot to generate a score, evidence-backed findings, sharper hero copy, a prioritized
-            action plan, and a meme verdict.
-          </p>
-        </div>
-        <button
-          className="sample-toggle"
-          type="button"
-          aria-expanded={isSampleOpen}
-          aria-controls="sample-result-preview"
-          onClick={onToggleSample}
-        >
-          <span>{isSampleOpen ? "Hide sample result" : "See sample result"}</span>
-          <ChevronDown aria-hidden="true" />
-        </button>
-      </section>
-
-      {isSampleOpen ? (
-        <div className="sample-results" id="sample-result-preview">
-          <div className="empty-preview-hero">
-            <div className="score-tile is-sample" aria-hidden="true">
-              <span>68</span>
-              <small>/100</small>
-            </div>
-            <div>
-              <p className="eyebrow">Sample result</p>
-              <h2>See the kind of critique you will get.</h2>
-              <p>Specific UX evidence, conversion risk, sharper copy, and an ordered action plan.</p>
-            </div>
-          </div>
-
-          <section className="roast-strip is-sample" aria-label="Sample roast preview">
-            <div>
-              <p className="eyebrow">Example roast</p>
-              <h3>Your hero is trying to be clever before it is useful.</h3>
-              <p>The headline sounds polished, but it never says who this is for or what changes after clicking.</p>
-            </div>
-          </section>
-
-          <section className="empty-preview-grid" aria-label="Sample result sections">
-            <article className="finding-card is-sample">
-              <div className="finding-topline">
-                <span>Hierarchy</span>
-                <span>High impact</span>
-              </div>
-              <h3>The CTA is doing background work</h3>
-              <p>The button exists, but the surrounding copy does not build enough momentum toward the click.</p>
-            </article>
-
-            <article className="finding-card is-sample">
-              <div className="finding-topline">
-                <span>Messaging</span>
-                <span>Low effort</span>
-              </div>
-              <h3>The value prop needs a receipt</h3>
-              <p>Add one concrete proof point so the promise feels earned instead of assumed.</p>
-            </article>
-          </section>
-
-          <section className="action-list is-sample" aria-label="Sample action plan preview">
-            <div className="section-title-row">
-              <div>
-                <p className="eyebrow">Action plan</p>
-                <h3>Fixes arrive in priority order</h3>
-              </div>
-            </div>
-            <div className="action-item">
-              <span>1</span>
-              <div>
-                <strong>Rewrite the hero promise</strong>
-                <p>Name the audience, outcome, and reason to care in one clear sentence.</p>
-              </div>
-            </div>
-          </section>
-        </div>
-      ) : null}
-    </div>
+    <section className="empty-start" aria-label="Result placeholder">
+      <div>
+        <p className="eyebrow">Step 2 / Result</p>
+        <h2>{isReady ? "Ready for the roast." : "Waiting for your screenshot."}</h2>
+        <p>
+          {isReady
+            ? "Click Roast my landing page and the scored critique will open here."
+            : "Upload a screenshot to activate the result panel."}
+        </p>
+      </div>
+      <div className="empty-start-icon" aria-hidden="true">
+        <WandSparkles />
+      </div>
+    </section>
   );
 }
 

@@ -33,9 +33,10 @@ Figma file: https://www.figma.com/design/eYqYb1t9elVie5IrOfKbvQ
 - Loaded video template
 - Missing template fallback with accessible label
 
-## Empty Result And Sample Preview
+## Empty Result
 
 - Default empty result state should stay calm and point back to the upload as step 1.
-- Sample result is hidden by default behind a small secondary `See sample result` toggle.
-- Expanded sample preview reuses the existing sample score, roast, findings, and action plan blocks.
-- Desktop variant keeps the placeholder centered in the result panel; mobile variant keeps the placeholder compact before the collapsed sample toggle.
+- Do not show sample content in the empty state.
+- Before upload, keep Step 2 as a subdued narrow rail/status box so it does not compete with Step 1.
+- After a screenshot is selected, show Step 2 as a normal ready panel; the right panel expands fully for loading and generated results.
+- Position the wand icon in the top-right corner, matching the Step 1 panel icon treatment.
