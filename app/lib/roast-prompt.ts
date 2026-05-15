@@ -1,4 +1,5 @@
 import type { RoastIntensity } from "@/app/types/roast";
+import { formatMemeTemplateOptions } from "@/app/lib/meme-library";
 
 const intensityGuidance: Record<RoastIntensity, string> = {
   helpful: "Warm, clear, gently witty. Prioritize coaching over jokes.",
@@ -22,8 +23,20 @@ export function buildRoastPrompt(options: { intensity: RoastIntensity; focusArea
     "- Conversion friction: what makes the user hesitate or work too hard?",
     "- Accessibility: contrast, readable type, dense layouts, and vague icon-only affordances.",
     "",
+    "Local meme template library:",
+    formatMemeTemplateOptions(),
+    "",
+    "Meme verdict rules:",
+    "- Choose exactly one meme.templateId from the local meme template library.",
+    "- Pick the template that best matches the overall diagnosis, not a minor finding.",
+    "- Write meme.caption as a short, sarcastic, Impact-style meme caption to render on top of the image/video.",
+    "- Keep meme.caption under 70 characters, punchy, and safe for a professional portfolio demo.",
+    "- Keep meme.reason under 160 characters and explain why that template fits the roast.",
+    "- Write meme.altText for the selected local image or video.",
+    "- Do not invent template IDs, do not request external images, and do not mention Imgflip in the reason.",
+    "",
     "Return JSON only. Keep findings grounded in visual evidence from the screenshot.",
-    "Use exactly this JSON shape: summary { pageType, audience, score, verdict }, roast { title, body, severity }, findings[] { category, issue, evidence, whyItMatters, recommendation, impact, effort }, rewrites { headline, subheadline, cta }, actionPlan[] { priority, label, rationale }.",
+    "Use exactly this JSON shape: summary { pageType, audience, score, verdict }, roast { title, body, severity }, findings[] { category, issue, evidence, whyItMatters, recommendation, impact, effort }, rewrites { headline, subheadline, cta }, actionPlan[] { priority, label, rationale }, meme { templateId, caption, reason, altText }.",
     "Return 3 to 6 findings and 3 to 5 actionPlan items.",
     "Use only these enum values: severity warm/spicy/savage, category one of the requested focus areas, impact low/medium/high, effort low/medium/high.",
     "For rewrites, improve the likely hero headline, subheadline, and primary CTA based on the visible page.",

@@ -162,6 +162,7 @@ export function normalizeRoastModelOutput(value: unknown) {
   const rewrites = getFirstRecord(normalized, ["rewrites", "rewrite", "heroRewrite", "hero_copy_rewrite"]);
   const actionPlan = getFirstArray(normalized, ["actionPlan", "action_plan", "actions", "nextSteps", "recommendations"]);
   const findings = getFirstArray(normalized, ["findings", "issues", "critiques"]);
+  const meme = getFirstRecord(normalized, ["meme", "memeVerdict", "meme_verdict", "finalMeme"]);
 
   if (summary) {
     summary.score = normalizeNumber(summary.score);
@@ -183,6 +184,10 @@ export function normalizeRoastModelOutput(value: unknown) {
 
   if (actionPlan) {
     normalized.actionPlan = actionPlan.map((item, index) => normalizeActionItem(item, index));
+  }
+
+  if (meme) {
+    normalized.meme = normalizeMeme(meme);
   }
 
   return normalized;
@@ -224,6 +229,16 @@ function normalizeActionItem(value: unknown, index: number) {
     priority: normalizeNumber(value.priority) ?? index + 1,
     label: normalizeString(value.label ?? value.title ?? value.action ?? value.step),
     rationale: normalizeString(value.rationale ?? value.reason ?? value.why ?? value.description),
+  };
+}
+
+function normalizeMeme(value: Record<string, unknown>) {
+  return {
+    ...value,
+    templateId: normalizeString(value.templateId ?? value.template_id ?? value.id ?? value.template),
+    caption: normalizeString(value.caption ?? value.text ?? value.punchline ?? value.title),
+    reason: normalizeString(value.reason ?? value.rationale ?? value.why),
+    altText: normalizeString(value.altText ?? value.alt_text ?? value.alt ?? value.description),
   };
 }
 

@@ -11,6 +11,7 @@ The critique is intentionally split into:
 - `findings`: evidence-backed UX/copy issues
 - `rewrites`: improved headline, subheadline, CTA
 - `actionPlan`: prioritized next fixes
+- `meme`: a local meme template classification for the overall verdict
 
 The server adds `meta` after validation, because model and latency are runtime facts rather than model-generated content.
 
@@ -39,6 +40,12 @@ All allowlisted models were checked against OpenRouter metadata on 2026-05-15 fo
 Gemini and Grok use `provider.require_parameters: true` so OpenRouter only routes to endpoints that explicitly support the full structured-output request. OpenAI receives `response_format: json_schema` without strict provider routing. Anthropic receives the JSON shape in the prompt only, because OpenRouter/Anthropic can reject the multimodal request when native schema parameters are forwarded. The app still parses and validates every response with Zod before returning it.
 
 Prompt-shaped responses are normalized for common near misses before validation, such as category casing, `score` or `priority` strings, and alternate field names like `why`, `fix`, or `nextSteps`.
+
+## Meme Classification
+
+The prompt includes a compact allowlist from `app/lib/meme-library.ts`. The model must choose one local `templateId`, write a short Impact-style `caption` rendered on the media, write a short `reason`, and provide `altText`.
+
+The model does not generate meme images or call Imgflip captioning endpoints. Imgflip is used only by the developer import script (`pnpm memes:import`) to populate `public/memes/imgflip/`; runtime rendering is fully local and still requires only `OPENROUTER_API_KEY`.
 
 ## Edge Cases
 

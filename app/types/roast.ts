@@ -12,6 +12,13 @@ export type ImpactLevel = "low" | "medium" | "high";
 export type EffortLevel = "low" | "medium" | "high";
 export type SeverityLevel = "warm" | "spicy" | "savage";
 
+export type MemeVerdict = {
+  templateId: string;
+  caption: string;
+  reason: string;
+  altText: string;
+};
+
 export type RoastFinding = {
   category: FindingCategory;
   issue: string;
@@ -45,6 +52,7 @@ export type RoastAnalysis = {
     label: string;
     rationale: string;
   }>;
+  meme: MemeVerdict;
   meta: {
     model: string;
     latencyMs: number;

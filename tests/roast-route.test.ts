@@ -59,6 +59,12 @@ const sampleAnalysis: RoastAnalysis = {
     { priority: 2, label: "Strengthen the CTA", rationale: "A visible next step reduces hesitation." },
     { priority: 3, label: "Add proof", rationale: "Proof makes the promise believable." },
   ],
+  meme: {
+    templateId: "imgflip-181913649",
+    caption: "CLEAR VALUE? BEST I CAN DO IS VIBES.",
+    reason: "The page keeps swiping past clear value in favor of vague polish.",
+    altText: "A local reaction meme template selected to summarize the landing page critique.",
+  },
   meta: {
     model: "test-model",
     latencyMs: 10,
@@ -80,6 +86,7 @@ describe("POST /api/roast", () => {
 
     expect(response.status).toBe(200);
     expect(payload.analysis.summary.score).toBe(72);
+    expect(payload.analysis.meme.templateId).toBe("imgflip-181913649");
     expect(analyzeLandingPageScreenshot).toHaveBeenCalledWith(
       expect.objectContaining({
         intensity: "spicy",

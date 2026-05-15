@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { MEME_TEMPLATE_IDS } from "@/app/lib/meme-library";
 import { analyzeLandingPageScreenshot, extractModelContent, normalizeRoastModelOutput, parseModelJson } from "@/app/lib/roast-ai";
+import { buildRoastPrompt } from "@/app/lib/roast-prompt";
+import { roastModelOutputSchema } from "@/app/lib/roast-schema";
 
 const openRouterCreate = vi.hoisted(() => vi.fn());
 
@@ -65,6 +68,12 @@ const sampleModelOutput = {
     { priority: 2, label: "Strengthen the CTA", rationale: "A visible next step reduces hesitation." },
     { priority: 3, label: "Add proof", rationale: "Proof makes the promise believable." },
   ],
+  meme: {
+    templateId: "imgflip-181913649",
+    caption: "CLEAR VALUE? BEST I CAN DO IS VIBES.",
+    reason: "The page keeps swiping past clear value in favor of vague polish.",
+    altText: "A local reaction meme template selected to summarize the landing page critique.",
+  },
 };
 
 describe("parseModelJson", () => {
@@ -164,6 +173,12 @@ describe("normalizeRoastModelOutput", () => {
         { priority: "2", step: "Boost CTA", description: "It should be obvious." },
         { priority: "3", label: "Add proof", rationale: "It lowers risk." },
       ],
+      memeVerdict: {
+        template: "imgflip-87743020",
+        punchline: "CLICK WHAT, EXACTLY?",
+        why: "The page makes visitors choose between two unclear next steps.",
+        alt: "A local meme template about competing choices.",
+      },
     });
 
     expect(normalized).toMatchObject({
@@ -203,7 +218,39 @@ describe("normalizeRoastModelOutput", () => {
         { priority: 2, label: "Boost CTA", rationale: "It should be obvious." },
         { priority: 3, label: "Add proof", rationale: "It lowers risk." },
       ],
+      meme: {
+        templateId: "imgflip-87743020",
+        caption: "CLICK WHAT, EXACTLY?",
+        reason: "The page makes visitors choose between two unclear next steps.",
+        altText: "A local meme template about competing choices.",
+      },
     });
+  });
+});
+
+describe("meme contract", () => {
+  it("accepts only local meme template IDs", () => {
+    expect(roastModelOutputSchema.safeParse(sampleModelOutput).success).toBe(true);
+    expect(
+      roastModelOutputSchema.safeParse({
+        ...sampleModelOutput,
+        meme: {
+          ...sampleModelOutput.meme,
+          templateId: "imgflip-not-real",
+        },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("includes the local meme allowlist in the prompt", () => {
+    const prompt = buildRoastPrompt({
+      intensity: "spicy",
+      focusAreas: ["visual-hierarchy", "messaging", "cta"],
+    });
+
+    expect(prompt).toContain("Local meme template library:");
+    expect(prompt).toContain(MEME_TEMPLATE_IDS[0]);
+    expect(prompt).toContain("meme { templateId, caption, reason, altText }");
   });
 });
 

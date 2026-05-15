@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "vitest run",
+    "memes:import": "node scripts/memes/import-imgflip.mjs",
     "version:bump": "node scripts/version/bump.mjs",
     "version:patch": "node scripts/version/bump.mjs patch",
     "version:minor": "node scripts/version/bump.mjs minor",

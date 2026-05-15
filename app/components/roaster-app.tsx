@@ -6,6 +6,7 @@ import {
   Check,
   Clipboard,
   Cpu,
+  ExternalLink,
   Flame,
   ImageUp,
   Info,
@@ -14,6 +15,7 @@ import {
   WandSparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getMemeTemplate } from "@/app/lib/meme-library";
 import { DEFAULT_ROAST_MODEL_ID, getRoastModelOption, ROAST_MODEL_OPTIONS } from "@/app/lib/roast-models";
 import type { RoastModelId } from "@/app/lib/roast-models";
 import type { RoastAnalysis, RoastIntensity } from "@/app/types/roast";
@@ -490,6 +492,7 @@ function Results({
     `Subheadline: ${analysis.rewrites.subheadline}`,
     `CTA: ${analysis.rewrites.cta}`,
   ].join("\n");
+  const memeTemplate = getMemeTemplate(analysis.meme.templateId);
 
   return (
     <div className="results">
@@ -577,7 +580,66 @@ function Results({
           </div>
         ))}
       </section>
+
+      <MemeVerdict
+        altText={analysis.meme.altText}
+        caption={analysis.meme.caption}
+        reason={analysis.meme.reason}
+        template={memeTemplate}
+      />
     </div>
+  );
+}
+
+function MemeVerdict({
+  altText,
+  caption,
+  reason,
+  template,
+}: {
+  altText: string;
+  caption: string;
+  reason: string;
+  template: ReturnType<typeof getMemeTemplate>;
+}) {
+  return (
+    <section className="meme-panel" aria-label="Meme verdict">
+      <div className="section-title-row">
+        <div>
+          <p className="eyebrow">Meme verdict</p>
+          <h3>The final read</h3>
+        </div>
+      </div>
+
+      <div className="meme-layout">
+        <div className="meme-media">
+          {template ? (
+            template.mediaType === "video" ? (
+              <video src={template.localPath} aria-label={altText} autoPlay loop muted playsInline preload="metadata" />
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={template.localPath} alt={altText} />
+            )
+          ) : (
+            <div className="meme-missing" role="img" aria-label={altText}>
+              Meme unavailable
+            </div>
+          )}
+          <strong className="meme-caption">{caption}</strong>
+        </div>
+
+        <div className="meme-copy">
+          <strong>{template?.name ?? "Local meme template"}</strong>
+          <p>{reason}</p>
+          {template ? (
+            <a className="meme-source" href={template.sourcePageUrl} target="_blank" rel="noreferrer">
+              <span>Template source: Imgflip</span>
+              <ExternalLink aria-hidden="true" />
+            </a>
+          ) : null}
+        </div>
+      </div>
+    </section>
   );
 }
 

@@ -57,7 +57,20 @@ This section describes the public API shape. Implementation rules for validation
 - `focusAreas`: one or more of `visual-hierarchy`, `messaging`, `cta`, `trust`, `conversion-friction`, `accessibility`
 - `model` (optional): one of the server allowlisted OpenRouter vision models
 
-The response is structured JSON containing score, roast, findings, hero copy rewrites, action plan, model, and latency.
+The response is structured JSON containing score, roast, findings, hero copy rewrites, action plan, a local meme verdict, model, and latency.
+
+`analysis.meme` contains:
+
+- `templateId`: one of the local Imgflip-derived templates in `app/lib/meme-library.ts`
+- `caption`: a short Impact-style meme caption rendered on the local image or video
+- `reason`: why that template fits the overall critique
+- `altText`: accessibility text for the local image or video template
+
+Meme templates are imported into `public/memes/imgflip/` by a one-time developer script. Runtime analysis does not call Imgflip and does not require Imgflip credentials:
+
+```bash
+pnpm memes:import
+```
 
 ## Deploy To Vercel
 

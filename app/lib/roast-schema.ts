@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MEME_TEMPLATE_IDS } from "@/app/lib/meme-library";
 import { ROAST_MODEL_IDS } from "@/app/lib/roast-models";
 
 export const roastIntensitySchema = z.enum(["helpful", "spicy", "savage"]);
@@ -17,6 +18,17 @@ export const roastRequestSchema = z.object({
   intensity: roastIntensitySchema.default("spicy"),
   focusAreas: z.array(focusAreaSchema).min(1).max(6).default(["visual-hierarchy", "messaging", "cta"]),
   model: roastModelSchema.optional(),
+});
+
+export const memeTemplateIdSchema = z.string().refine((value) => MEME_TEMPLATE_IDS.includes(value), {
+  message: "Choose a meme template from the local manifest.",
+});
+
+export const memeVerdictSchema = z.object({
+  templateId: memeTemplateIdSchema,
+  caption: z.string().min(1).max(90),
+  reason: z.string().min(1).max(240),
+  altText: z.string().min(1).max(260),
 });
 
 export const roastModelOutputSchema = z.object({
@@ -60,6 +72,7 @@ export const roastModelOutputSchema = z.object({
     )
     .min(3)
     .max(5),
+  meme: memeVerdictSchema,
 });
 
 export const roastAnalysisSchema = roastModelOutputSchema.extend({
@@ -75,7 +88,7 @@ export const roastJsonSchema = {
   schema: {
     type: "object",
     additionalProperties: false,
-    required: ["summary", "roast", "findings", "rewrites", "actionPlan"],
+    required: ["summary", "roast", "findings", "rewrites", "actionPlan", "meme"],
     properties: {
       summary: {
         type: "object",
@@ -157,6 +170,32 @@ export const roastJsonSchema = {
             priority: { type: "integer", minimum: 1, maximum: 5 },
             label: { type: "string" },
             rationale: { type: "string" },
+          },
+        },
+      },
+      meme: {
+        type: "object",
+        additionalProperties: false,
+        required: ["templateId", "caption", "reason", "altText"],
+        properties: {
+          templateId: {
+            type: "string",
+            enum: MEME_TEMPLATE_IDS,
+          },
+          caption: {
+            type: "string",
+            minLength: 1,
+            maxLength: 90,
+          },
+          reason: {
+            type: "string",
+            minLength: 1,
+            maxLength: 240,
+          },
+          altText: {
+            type: "string",
+            minLength: 1,
+            maxLength: 260,
           },
         },
       },
