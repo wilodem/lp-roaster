@@ -38,6 +38,8 @@ All allowlisted models were checked against OpenRouter metadata on 2026-05-15 fo
 
 Gemini and Grok use `provider.require_parameters: true` so OpenRouter only routes to endpoints that explicitly support the full structured-output request. OpenAI receives `response_format: json_schema` without strict provider routing. Anthropic receives the JSON shape in the prompt only, because OpenRouter/Anthropic can reject the multimodal request when native schema parameters are forwarded. The app still parses and validates every response with Zod before returning it.
 
+Prompt-shaped responses are normalized for common near misses before validation, such as category casing, `score` or `priority` strings, and alternate field names like `why`, `fix`, or `nextSteps`.
+
 ## Edge Cases
 
 - Missing screenshot: 400 with a human-readable message.

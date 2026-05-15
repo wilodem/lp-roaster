@@ -24,6 +24,7 @@ export function buildRoastPrompt(options: { intensity: RoastIntensity; focusArea
     "",
     "Return JSON only. Keep findings grounded in visual evidence from the screenshot.",
     "Use exactly this JSON shape: summary { pageType, audience, score, verdict }, roast { title, body, severity }, findings[] { category, issue, evidence, whyItMatters, recommendation, impact, effort }, rewrites { headline, subheadline, cta }, actionPlan[] { priority, label, rationale }.",
+    "Return 3 to 6 findings and 3 to 5 actionPlan items.",
     "Use only these enum values: severity warm/spicy/savage, category one of the requested focus areas, impact low/medium/high, effort low/medium/high.",
     "For rewrites, improve the likely hero headline, subheadline, and primary CTA based on the visible page.",
   ].join("\n");

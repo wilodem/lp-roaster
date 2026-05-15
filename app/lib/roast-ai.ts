@@ -78,10 +78,11 @@ export async function analyzeLandingPageScreenshot(options: {
   }
 
   const parsed = parseModelJson(content);
-  const analysis = roastModelOutputSchema.safeParse(parsed);
+  const normalized = normalizeRoastModelOutput(parsed);
+  const analysis = roastModelOutputSchema.safeParse(normalized);
 
   if (!analysis.success) {
-    throw new Error("OpenRouter returned analysis with an unexpected shape. Try again with a clearer screenshot.");
+    throw new Error(`OpenRouter returned analysis with an unexpected shape: ${formatSchemaIssues(analysis.error.issues)}.`);
   }
 
   return {
@@ -148,6 +149,240 @@ export function parseModelJson(content: string) {
   }
 
   throw new Error("OpenRouter returned invalid JSON. Try again with a clearer screenshot.");
+}
+
+export function normalizeRoastModelOutput(value: unknown) {
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  const normalized: Record<string, unknown> = { ...value };
+  const summary = isRecord(normalized.summary) ? { ...normalized.summary } : undefined;
+  const roast = isRecord(normalized.roast) ? { ...normalized.roast } : undefined;
+  const rewrites = getFirstRecord(normalized, ["rewrites", "rewrite", "heroRewrite", "hero_copy_rewrite"]);
+  const actionPlan = getFirstArray(normalized, ["actionPlan", "action_plan", "actions", "nextSteps", "recommendations"]);
+  const findings = getFirstArray(normalized, ["findings", "issues", "critiques"]);
+
+  if (summary) {
+    summary.score = normalizeNumber(summary.score);
+    normalized.summary = summary;
+  }
+
+  if (roast) {
+    roast.severity = normalizeSeverity(roast.severity);
+    normalized.roast = roast;
+  }
+
+  if (findings) {
+    normalized.findings = findings.map((finding) => normalizeFinding(finding));
+  }
+
+  if (rewrites) {
+    normalized.rewrites = normalizeRewrites(rewrites);
+  }
+
+  if (actionPlan) {
+    normalized.actionPlan = actionPlan.map((item, index) => normalizeActionItem(item, index));
+  }
+
+  return normalized;
+}
+
+function normalizeFinding(value: unknown) {
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  return {
+    ...value,
+    category: normalizeCategory(value.category ?? value.area ?? value.focusArea ?? value.type),
+    issue: normalizeString(value.issue ?? value.title ?? value.finding),
+    evidence: normalizeString(value.evidence ?? value.observation ?? value.visibleEvidence),
+    whyItMatters: normalizeString(value.whyItMatters ?? value.why_it_matters ?? value.why ?? value.rationale),
+    recommendation: normalizeString(value.recommendation ?? value.fix ?? value.suggestion ?? value.action),
+    impact: normalizeImpactEffort(value.impact),
+    effort: normalizeImpactEffort(value.effort),
+  };
+}
+
+function normalizeRewrites(value: Record<string, unknown>) {
+  return {
+    ...value,
+    headline: normalizeString(value.headline ?? value.heroHeadline ?? value.title),
+    subheadline: normalizeString(value.subheadline ?? value.subhead ?? value.heroSubheadline ?? value.subtitle),
+    cta: normalizeString(value.cta ?? value.button ?? value.primaryCta),
+  };
+}
+
+function normalizeActionItem(value: unknown, index: number) {
+  if (!isRecord(value)) {
+    return value;
+  }
+
+  return {
+    ...value,
+    priority: normalizeNumber(value.priority) ?? index + 1,
+    label: normalizeString(value.label ?? value.title ?? value.action ?? value.step),
+    rationale: normalizeString(value.rationale ?? value.reason ?? value.why ?? value.description),
+  };
+}
+
+function getFirstRecord(source: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    if (isRecord(source[key])) {
+      return { ...source[key] };
+    }
+  }
+
+  return undefined;
+}
+
+function getFirstArray(source: Record<string, unknown>, keys: string[]) {
+  for (const key of keys) {
+    if (Array.isArray(source[key])) {
+      return source[key];
+    }
+  }
+
+  return undefined;
+}
+
+function normalizeCategory(value: unknown) {
+  const normalized = normalizeToken(value);
+
+  const categoryAliases: Record<string, string> = {
+    a11y: "accessibility",
+    accessibility: "accessibility",
+    copy: "messaging",
+    cta: "cta",
+    friction: "conversion-friction",
+    hierarchy: "visual-hierarchy",
+    messaging: "messaging",
+    trust: "trust",
+    "conversion-friction": "conversion-friction",
+    "conversion-frictions": "conversion-friction",
+    "visual-hierarchy": "visual-hierarchy",
+  };
+
+  if (categoryAliases[normalized]) {
+    return categoryAliases[normalized];
+  }
+
+  if (normalized.includes("hierarchy")) {
+    return "visual-hierarchy";
+  }
+
+  if (normalized.includes("message") || normalized.includes("copy")) {
+    return "messaging";
+  }
+
+  if (normalized.includes("cta")) {
+    return "cta";
+  }
+
+  if (normalized.includes("trust") || normalized.includes("proof")) {
+    return "trust";
+  }
+
+  if (normalized.includes("friction") || normalized.includes("conversion")) {
+    return "conversion-friction";
+  }
+
+  if (normalized.includes("access") || normalized.includes("a11y")) {
+    return "accessibility";
+  }
+
+  return normalized;
+}
+
+function normalizeSeverity(value: unknown) {
+  const normalized = normalizeToken(value);
+
+  if (normalized === "warm" || normalized === "spicy" || normalized === "savage") {
+    return normalized;
+  }
+
+  if (normalized === "mild" || normalized === "low") {
+    return "warm";
+  }
+
+  if (normalized === "medium" || normalized === "moderate" || normalized === "hot") {
+    return "spicy";
+  }
+
+  if (normalized === "high" || normalized === "brutal" || normalized === "harsh") {
+    return "savage";
+  }
+
+  return value;
+}
+
+function normalizeImpactEffort(value: unknown) {
+  const normalized = normalizeToken(value);
+
+  if (normalized === "low" || normalized === "medium" || normalized === "high") {
+    return normalized;
+  }
+
+  if (normalized.includes("low")) {
+    return "low";
+  }
+
+  if (normalized.includes("high")) {
+    return "high";
+  }
+
+  if (normalized.includes("medium") || normalized.includes("moderate")) {
+    return "medium";
+  }
+
+  return value;
+}
+
+function normalizeNumber(value: unknown) {
+  if (typeof value === "number") {
+    return value;
+  }
+
+  if (typeof value !== "string") {
+    return value;
+  }
+
+  const outOfTen = value.match(/(\d+)\s*\/\s*10\b/);
+
+  if (outOfTen) {
+    return Number(outOfTen[1]) * 10;
+  }
+
+  const match = value.match(/\d+/);
+
+  return match ? Number(match[0]) : value;
+}
+
+function normalizeString(value: unknown) {
+  return typeof value === "string" ? value : value;
+}
+
+function normalizeToken(value: unknown) {
+  return typeof value === "string"
+    ? value
+        .trim()
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+    : "";
+}
+
+function formatSchemaIssues(issues: Array<{ path: PropertyKey[]; message: string }>) {
+  return issues
+    .slice(0, 3)
+    .map((issue) => `${issue.path.join(".") || "root"} ${issue.message}`)
+    .join("; ");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function stripJsonFence(content: string) {
