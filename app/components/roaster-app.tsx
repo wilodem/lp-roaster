@@ -80,6 +80,7 @@ export function RoasterApp() {
     return `${file.name} / ${(file.size / 1024 / 1024).toFixed(2)} MB`;
   }, [file]);
   const advancedSummary = "Intensity, focus areas, model";
+  const workspaceState = analysis ? "is-result-focused" : "is-pre-result";
 
   function handleFiles(files: FileList | null) {
     const nextFile = files?.[0];
@@ -175,7 +176,7 @@ export function RoasterApp() {
         </div>
       </header>
 
-      <section className="workspace" aria-label="Roaster workspace">
+      <section className={`workspace ${workspaceState}`} aria-label="Roaster workspace">
         <div className="tool-panel input-panel">
           <div className="panel-heading">
             <div>

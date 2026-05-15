@@ -166,9 +166,18 @@ p {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(360px, 0.82fr) minmax(520px, 1.18fr);
+  grid-template-columns: minmax(520px, 1.35fr) minmax(320px, 0.65fr);
   gap: 20px;
   align-items: start;
+  transition: grid-template-columns 280ms ease;
+}
+
+.workspace.is-pre-result {
+  grid-template-columns: minmax(520px, 1.35fr) minmax(320px, 0.65fr);
+}
+
+.workspace.is-result-focused {
+  grid-template-columns: minmax(340px, 0.72fr) minmax(560px, 1.28fr);
 }
 
 .tool-panel {
@@ -1134,9 +1143,18 @@ p {
   }
 }
 
-@media (max-width: 1040px) {
+@media (prefers-reduced-motion: reduce) {
   .workspace {
+    transition: none;
+  }
+}
+
+@media (max-width: 1040px) {
+  .workspace,
+  .workspace.is-pre-result,
+  .workspace.is-result-focused {
     grid-template-columns: 1fr;
+    transition: none;
   }
 
   .result-panel.is-loading,

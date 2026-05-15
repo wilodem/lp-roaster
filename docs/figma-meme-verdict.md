@@ -37,6 +37,6 @@ Figma file: https://www.figma.com/design/eYqYb1t9elVie5IrOfKbvQ
 
 - Default empty result state should stay calm and point back to the upload as step 1.
 - Do not show sample content in the empty state.
-- Before upload, keep Step 2 as a subdued narrow rail/status box so it does not compete with Step 1.
-- After a screenshot is selected, show Step 2 as a normal ready panel; the right panel expands fully for loading and generated results.
+- Until a real result exists, keep Step 1 wider than Step 2 so the upload remains the clear primary action.
+- Once the generated result appears, gently shift the desktop grid so Step 2 becomes wider than Step 1.
 - Position the wand icon in the top-right corner, matching the Step 1 panel icon treatment.
