@@ -10,6 +10,8 @@ Landing Page Roaster is a rapid MVP for reviewing landing page screenshots with 
 - OpenRouter vision via the OpenAI-compatible SDK
 - Zod for request and response validation
 
+Implementation conventions for React/Next.js components, API boundaries, AI integration, and tests live in [docs/technical-guidelines.md](docs/technical-guidelines.md).
+
 ## Setup
 
 ```bash
@@ -45,6 +47,8 @@ pnpm build
 ```
 
 ## API Contract
+
+This section describes the public API shape. Implementation rules for validation, errors, and AI boundaries are in [docs/technical-guidelines.md](docs/technical-guidelines.md).
 
 `POST /api/roast` accepts `multipart/form-data`:
 
