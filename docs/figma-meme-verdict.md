@@ -32,3 +32,10 @@ Figma file: https://www.figma.com/design/eYqYb1t9elVie5IrOfKbvQ
 - Loaded image template
 - Loaded video template
 - Missing template fallback with accessible label
+
+## Empty Result And Sample Preview
+
+- Default empty result state should stay calm and point back to the upload as step 1.
+- Sample result is hidden by default behind a small secondary `See sample result` toggle.
+- Expanded sample preview reuses the existing sample score, roast, findings, and action plan blocks.
+- Desktop variant keeps the placeholder centered in the result panel; mobile variant keeps the placeholder compact before the collapsed sample toggle.
