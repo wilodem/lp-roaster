@@ -2,7 +2,7 @@ import type { ChatCompletionCreateParamsNonStreaming } from "openai/resources/ch
 import { getOpenRouterClient, getRoastModel } from "@/app/lib/openrouter";
 import { buildRoastPrompt, roastSystemPrompt } from "@/app/lib/roast-prompt";
 import { roastJsonSchema, roastModelOutputSchema } from "@/app/lib/roast-schema";
-import { shouldRequireStructuredOutputSupport } from "@/app/lib/roast-models";
+import { shouldRequireStructuredOutputSupport, shouldUseJsonSchemaResponseFormat } from "@/app/lib/roast-models";
 import type { RoastModelId } from "@/app/lib/roast-models";
 import type { RoastAnalysis, RoastIntensity } from "@/app/types/roast";
 
@@ -26,6 +26,7 @@ export async function analyzeLandingPageScreenshot(options: {
   startedAt: number;
 }): Promise<RoastAnalysis> {
   const model = options.model ?? getRoastModel();
+  const useJsonSchemaResponseFormat = shouldUseJsonSchemaResponseFormat(model);
   const dataUrl = `data:${options.mimeType};base64,${Buffer.from(options.imageBuffer).toString("base64")}`;
 
   const request: OpenRouterChatCompletionParams = {
@@ -33,12 +34,14 @@ export async function analyzeLandingPageScreenshot(options: {
     temperature: 0.25,
     max_tokens: 3600,
     stream: false,
-    plugins: [{ id: "response-healing" }],
+    plugins: useJsonSchemaResponseFormat ? [{ id: "response-healing" }] : undefined,
     provider: shouldRequireStructuredOutputSupport(model) ? { require_parameters: true } : undefined,
-    response_format: {
-      type: "json_schema",
-      json_schema: roastJsonSchema,
-    },
+    response_format: useJsonSchemaResponseFormat
+      ? {
+          type: "json_schema",
+          json_schema: roastJsonSchema,
+        }
+      : undefined,
     messages: [
       {
         role: "system",

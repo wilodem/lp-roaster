@@ -36,7 +36,7 @@ The UI can request one of a small server-validated OpenRouter model allowlist:
 
 All allowlisted models were checked against OpenRouter metadata on 2026-05-15 for image input, text output, `response_format`, and `structured_outputs`. The server still accepts `OPENROUTER_MODEL` as an operator-controlled fallback when no UI model is submitted.
 
-Gemini and Grok use `provider.require_parameters: true` so OpenRouter only routes to endpoints that explicitly support the full structured-output request. OpenAI and Anthropic options still receive the JSON schema, but omit strict provider routing because OpenRouter can otherwise return `404 No endpoints found that can handle the requested parameters` for the multimodal schema request. The app still parses and validates every response with Zod before returning it.
+Gemini and Grok use `provider.require_parameters: true` so OpenRouter only routes to endpoints that explicitly support the full structured-output request. OpenAI receives `response_format: json_schema` without strict provider routing. Anthropic receives the JSON shape in the prompt only, because OpenRouter/Anthropic can reject the multimodal request when native schema parameters are forwarded. The app still parses and validates every response with Zod before returning it.
 
 ## Edge Cases
 

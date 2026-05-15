@@ -23,6 +23,8 @@ export function buildRoastPrompt(options: { intensity: RoastIntensity; focusArea
     "- Accessibility: contrast, readable type, dense layouts, and vague icon-only affordances.",
     "",
     "Return JSON only. Keep findings grounded in visual evidence from the screenshot.",
+    "Use exactly this JSON shape: summary { pageType, audience, score, verdict }, roast { title, body, severity }, findings[] { category, issue, evidence, whyItMatters, recommendation, impact, effort }, rewrites { headline, subheadline, cta }, actionPlan[] { priority, label, rationale }.",
+    "Use only these enum values: severity warm/spicy/savage, category one of the requested focus areas, impact low/medium/high, effort low/medium/high.",
     "For rewrites, improve the likely hero headline, subheadline, and primary CTA based on the visible page.",
   ].join("\n");
 }

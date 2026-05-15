@@ -147,7 +147,7 @@ describe("analyzeLandingPageScreenshot routing", () => {
     );
   });
 
-  it("avoids strict provider routing for schema-hinted models", async () => {
+  it("avoids native schema parameters for prompt-shaped Anthropic models", async () => {
     await analyzeLandingPageScreenshot({
       imageBuffer: new Uint8Array([1]).buffer,
       mimeType: "image/png",
@@ -160,10 +160,9 @@ describe("analyzeLandingPageScreenshot routing", () => {
     expect(openRouterCreate).toHaveBeenCalledWith(
       expect.objectContaining({
         model: "anthropic/claude-sonnet-4.6",
+        plugins: undefined,
         provider: undefined,
-        response_format: expect.objectContaining({
-          type: "json_schema",
-        }),
+        response_format: undefined,
       }),
     );
   });

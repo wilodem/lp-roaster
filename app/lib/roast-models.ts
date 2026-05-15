@@ -7,6 +7,7 @@ export const ROAST_MODEL_OPTIONS = [
     priceHint: "$0.25 in / $1.50 out / $0.25 image",
     // OpenRouter can fail routing when require_parameters is true and no provider endpoint supports the full multimodal schema request.
     requireStructuredOutputSupport: true,
+    useJsonSchemaResponseFormat: true,
   },
   {
     id: "openai/gpt-5.4-mini",
@@ -15,6 +16,7 @@ export const ROAST_MODEL_OPTIONS = [
     detail: "Recognizable and efficient",
     priceHint: "$0.75 in / $4.50 out",
     requireStructuredOutputSupport: false,
+    useJsonSchemaResponseFormat: true,
   },
   {
     id: "x-ai/grok-4.3",
@@ -23,6 +25,7 @@ export const ROAST_MODEL_OPTIONS = [
     detail: "Low output cost",
     priceHint: "$1.25 in / $2.50 out",
     requireStructuredOutputSupport: true,
+    useJsonSchemaResponseFormat: true,
   },
   {
     id: "anthropic/claude-sonnet-4.6",
@@ -31,6 +34,7 @@ export const ROAST_MODEL_OPTIONS = [
     detail: "Strong UX and copy reads",
     priceHint: "$3 in / $15 out",
     requireStructuredOutputSupport: false,
+    useJsonSchemaResponseFormat: false,
   },
   {
     id: "anthropic/claude-opus-4.7",
@@ -39,6 +43,7 @@ export const ROAST_MODEL_OPTIONS = [
     detail: "Deepest critique option",
     priceHint: "$5 in / $25 out",
     requireStructuredOutputSupport: false,
+    useJsonSchemaResponseFormat: false,
   },
 ] as const;
 
@@ -54,4 +59,8 @@ export function getRoastModelOption(modelId: string) {
 
 export function shouldRequireStructuredOutputSupport(modelId: string) {
   return getRoastModelOption(modelId)?.requireStructuredOutputSupport ?? true;
+}
+
+export function shouldUseJsonSchemaResponseFormat(modelId: string) {
+  return getRoastModelOption(modelId)?.useJsonSchemaResponseFormat ?? true;
 }
