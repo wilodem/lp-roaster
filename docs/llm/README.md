@@ -11,7 +11,8 @@ The critique is intentionally split into:
 - `findings`: evidence-backed UX/copy issues
 - `rewrites`: improved headline, subheadline, CTA
 - `actionPlan`: prioritized next fixes
-- `meta`: model and latency
+
+The server adds `meta` after validation, because model and latency are runtime facts rather than model-generated content.
 
 ## Model Contract
 
@@ -20,6 +21,8 @@ The route uses OpenRouter chat completions with:
 - text prompt
 - image data URL
 - `response_format: json_schema`
+- OpenRouter `response-healing` for malformed JSON recovery
+- `provider.require_parameters` so routing does not silently ignore structured output requirements
 
 The parsed model output is validated again with Zod before being returned to the client.
 

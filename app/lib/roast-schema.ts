@@ -16,7 +16,7 @@ export const roastRequestSchema = z.object({
   focusAreas: z.array(focusAreaSchema).min(1).max(6).default(["visual-hierarchy", "messaging", "cta"]),
 });
 
-export const roastAnalysisSchema = z.object({
+export const roastModelOutputSchema = z.object({
   summary: z.object({
     pageType: z.string().min(1),
     audience: z.string().min(1),
@@ -57,6 +57,9 @@ export const roastAnalysisSchema = z.object({
     )
     .min(3)
     .max(5),
+});
+
+export const roastAnalysisSchema = roastModelOutputSchema.extend({
   meta: z.object({
     model: z.string().min(1),
     latencyMs: z.number().int().nonnegative(),
@@ -69,7 +72,7 @@ export const roastJsonSchema = {
   schema: {
     type: "object",
     additionalProperties: false,
-    required: ["summary", "roast", "findings", "rewrites", "actionPlan", "meta"],
+    required: ["summary", "roast", "findings", "rewrites", "actionPlan"],
     properties: {
       summary: {
         type: "object",
@@ -152,15 +155,6 @@ export const roastJsonSchema = {
             label: { type: "string" },
             rationale: { type: "string" },
           },
-        },
-      },
-      meta: {
-        type: "object",
-        additionalProperties: false,
-        required: ["model", "latencyMs"],
-        properties: {
-          model: { type: "string" },
-          latencyMs: { type: "integer", minimum: 0 },
         },
       },
     },
