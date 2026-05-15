@@ -145,10 +145,19 @@ export function RoasterApp() {
           <p className="eyebrow">AI UX critique</p>
           <h1>Landing Page Roaster</h1>
         </div>
-        <div className="stack-pills" aria-label="Project stack">
-          <span>Next.js</span>
-          <span>OpenRouter vision</span>
-          <span>No RAG</span>
+        <div className="benefit-list" aria-label="Product highlights">
+          <span>
+            <Check aria-hidden="true" />
+            No signup
+          </span>
+          <span>
+            <Check aria-hidden="true" />
+            Screenshot in
+          </span>
+          <span>
+            <Check aria-hidden="true" />
+            Action plan out
+          </span>
         </div>
       </header>
 
@@ -157,13 +166,14 @@ export function RoasterApp() {
           <div className="panel-heading">
             <div>
               <p className="eyebrow">Screenshot</p>
-              <h2>Give the page something to answer for</h2>
+              <h2>Upload a landing page screenshot</h2>
+              <p>Get a blunt UX and copy critique in under a minute.</p>
             </div>
             <ImageUp aria-hidden="true" />
           </div>
 
           <button
-            className={`dropzone ${isDragging ? "is-dragging" : ""}`}
+            className={`dropzone ${isDragging ? "is-dragging" : ""} ${!file ? "is-empty" : ""}`}
             type="button"
             onClick={() => inputRef.current?.click()}
             onDragEnter={(event) => {
@@ -201,52 +211,17 @@ export function RoasterApp() {
             )}
           </div>
 
-          <div className="control-block">
-            <div className="control-label">
-              <span>Roast intensity</span>
-              <Flame aria-hidden="true" />
-            </div>
-            <div className="segmented" role="radiogroup" aria-label="Roast intensity">
-              {intensityOptions.map((option) => (
-                <button
-                  key={option.value}
-                  className={intensity === option.value ? "is-selected" : ""}
-                  type="button"
-                  role="radio"
-                  aria-checked={intensity === option.value}
-                  onClick={() => setIntensity(option.value)}
-                >
-                  <strong>{option.label}</strong>
-                  <span>{option.detail}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="control-block">
-            <div className="control-label">
-              <span>Focus areas</span>
-              <Sparkles aria-hidden="true" />
-            </div>
-            <div className="chip-grid" aria-label="Focus areas">
-              {focusOptions.map((option) => {
-                const isSelected = focusAreas.includes(option.value);
-
-                return (
-                  <button
-                    key={option.value}
-                    className={isSelected ? "chip is-selected" : "chip"}
-                    type="button"
-                    aria-pressed={isSelected}
-                    onClick={() => toggleFocusArea(option.value)}
-                  >
-                    {isSelected ? <Check aria-hidden="true" /> : null}
-                    <span>{option.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          {file ? (
+            <button
+              className={`primary-action ${isLoading ? "is-busy" : ""}`}
+              type="button"
+              onClick={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? <LoaderCircle className="spin" aria-hidden="true" /> : <WandSparkles aria-hidden="true" />}
+              <span>{isLoading ? "Analyzing screenshot" : "Start the roast"}</span>
+            </button>
+          ) : null}
 
           {error ? (
             <div className="error-banner" role="alert">
@@ -255,10 +230,61 @@ export function RoasterApp() {
             </div>
           ) : null}
 
-          <button className="primary-action" type="button" onClick={handleSubmit} disabled={isLoading}>
-            {isLoading ? <LoaderCircle className="spin" aria-hidden="true" /> : <WandSparkles aria-hidden="true" />}
-            <span>{isLoading ? "Analyzing screenshot" : "Roast this page"}</span>
-          </button>
+          <div className="tuning-panel">
+            <div className="tuning-header">
+              <div>
+                <p className="eyebrow">Tune the roast</p>
+                <h3>Optional critique settings</h3>
+              </div>
+              <Sparkles aria-hidden="true" />
+            </div>
+
+            <div className="control-block">
+              <div className="control-label">
+                <span>Roast intensity</span>
+                <Flame aria-hidden="true" />
+              </div>
+              <div className="segmented" role="radiogroup" aria-label="Roast intensity">
+                {intensityOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    className={intensity === option.value ? "is-selected" : ""}
+                    type="button"
+                    role="radio"
+                    aria-checked={intensity === option.value}
+                    onClick={() => setIntensity(option.value)}
+                  >
+                    <strong>{option.label}</strong>
+                    <span>{option.detail}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="control-block">
+              <div className="control-label">
+                <span>Focus areas</span>
+              </div>
+              <div className="chip-grid" aria-label="Focus areas">
+                {focusOptions.map((option) => {
+                  const isSelected = focusAreas.includes(option.value);
+
+                  return (
+                    <button
+                      key={option.value}
+                      className={isSelected ? "chip is-selected" : "chip"}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => toggleFocusArea(option.value)}
+                    >
+                      {isSelected ? <Check aria-hidden="true" /> : null}
+                      <span>{option.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="tool-panel result-panel" aria-live="polite">
@@ -278,12 +304,61 @@ export function RoasterApp() {
 function EmptyResults() {
   return (
     <div className="empty-results">
-      <div className="empty-mark">
-        <WandSparkles aria-hidden="true" />
+      <div className="empty-preview-hero">
+        <div className="score-tile is-sample" aria-hidden="true">
+          <span>--</span>
+          <small>/100</small>
+        </div>
+        <div>
+          <p className="eyebrow">Example result</p>
+          <h2>See the kind of critique you will get.</h2>
+          <p>Specific UX evidence, conversion risk, sharper copy, and an ordered action plan.</p>
+        </div>
       </div>
-      <p className="eyebrow">Result</p>
-      <h2>Ready for a screenshot.</h2>
-      <p>Pick the heat level, upload the page, and the critique lands here.</p>
+
+      <section className="roast-strip is-sample" aria-label="Sample roast preview">
+        <div>
+          <p className="eyebrow">Example roast</p>
+          <h3>Your hero is trying to be clever before it is useful.</h3>
+          <p>The headline sounds polished, but it never says who this is for or what changes after clicking.</p>
+        </div>
+      </section>
+
+      <section className="empty-preview-grid" aria-label="Sample result sections">
+        <article className="finding-card is-sample">
+          <div className="finding-topline">
+            <span>Hierarchy</span>
+            <span>High impact</span>
+          </div>
+          <h3>The CTA is doing background work</h3>
+          <p>The button exists, but the surrounding copy does not build enough momentum toward the click.</p>
+        </article>
+
+        <article className="finding-card is-sample">
+          <div className="finding-topline">
+            <span>Messaging</span>
+            <span>Low effort</span>
+          </div>
+          <h3>The value prop needs a receipt</h3>
+          <p>Add one concrete proof point so the promise feels earned instead of assumed.</p>
+        </article>
+      </section>
+
+      <section className="action-list is-sample" aria-label="Sample action plan preview">
+        <div className="section-title-row">
+          <div>
+            <p className="eyebrow">Action plan</p>
+            <h3>Fixes arrive in priority order</h3>
+          </div>
+        </div>
+        <div className="action-item">
+          <span>1</span>
+          <div>
+            <strong>Rewrite the hero promise</strong>
+            <p>Name the audience, outcome, and reason to care in one clear sentence.</p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
