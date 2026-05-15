@@ -26,7 +26,7 @@ The route uses OpenRouter chat completions with:
 
 The parsed model output is validated again with Zod before being returned to the client.
 
-The UI can request one of a small server-validated OpenRouter model allowlist:
+The UI can request one of a small server-validated OpenRouter model allowlist from the collapsed Advanced settings panel:
 
 - `google/gemini-3.1-flash-lite` - default fast-value demo model
 - `openai/gpt-5.4-mini` - balanced recognizable-provider option
@@ -34,7 +34,7 @@ The UI can request one of a small server-validated OpenRouter model allowlist:
 - `anthropic/claude-sonnet-4.6` - strongest routine UX/copy critique option
 - `anthropic/claude-opus-4.7` - premium deeper critique option
 
-All allowlisted models were checked against OpenRouter metadata on 2026-05-15 for image input, text output, `response_format`, and `structured_outputs`. The server still accepts `OPENROUTER_MODEL` as an operator-controlled fallback when no UI model is submitted.
+All allowlisted models were checked against OpenRouter metadata on 2026-05-15 for image input, text output, `response_format`, and `structured_outputs`. The server still accepts `OPENROUTER_MODEL` as an operator-controlled fallback when no UI model is submitted. Approximate prices are kept in the allowlist and exposed as a hover/focus/tap tooltip in Advanced settings, so cost context remains available without making token prices part of the first-run upload flow.
 
 Gemini and Grok use `provider.require_parameters: true` so OpenRouter only routes to endpoints that explicitly support the full structured-output request. OpenAI receives `response_format: json_schema` without strict provider routing. Anthropic receives the JSON shape in the prompt only, because OpenRouter/Anthropic can reject the multimodal request when native schema parameters are forwarded. The app still parses and validates every response with Zod before returning it.
 

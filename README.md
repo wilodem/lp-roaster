@@ -1,6 +1,6 @@
 # lp-roaster
 
-Landing Page Roaster is a rapid MVP for reviewing landing page screenshots with an AI vision model. Upload a PNG, JPG, or WebP screenshot, choose the roast intensity, and get a structured UX and copy teardown with practical fixes.
+Landing Page Roaster is a rapid MVP for reviewing landing page screenshots with an AI vision model. Upload a PNG, JPG, or WebP screenshot and get a prioritized UX/copy teardown in about 60 seconds. Optional advanced settings let reviewers tune roast intensity, focus areas, and the OpenRouter model without making first-time users decide before they see value.
 
 ## Stack
 
@@ -35,7 +35,7 @@ OPENROUTER_APP_TITLE=Landing Page Roaster
 OPENROUTER_SITE_URL=http://localhost:3000
 ```
 
-The UI also exposes a small allowlist of popular OpenRouter vision models. Submitted model IDs are validated server-side; arbitrary model IDs are rejected.
+The UI exposes a small allowlist of popular OpenRouter vision models inside Advanced settings. Submitted model IDs are validated server-side; arbitrary model IDs are rejected. Approximate model prices are available as hover/focus/tap info in that advanced selector, but are not shown in the primary upload flow.
 
 ## Commands
 

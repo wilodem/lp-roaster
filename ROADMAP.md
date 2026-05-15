@@ -8,10 +8,11 @@ Landing Page Roaster is intentionally small for the recruiting MVP. This roadmap
 - Add a mock-analysis mode for demos without spending model tokens.
 - Improve upload errors with exact file size and accepted types.
 - Add one browser-level smoke test for the empty, loading, and error states.
+- Keep optional tuning controls collapsed by default so first-time users see the upload promise before model and cost tradeoffs.
 
 ## 0.2.x - Better Critique Quality
 
-- Add a compact allowlisted OpenRouter model selector for cost/speed/depth tradeoffs.
+- Refine the compact allowlisted OpenRouter model selector as model pricing and routing quality change.
 - Add per-finding confidence and evidence snippets.
 - Add a visual hierarchy checklist that the prompt can reference.
 - Add a compact export format for sharing the teardown in Slack or GitHub issues.

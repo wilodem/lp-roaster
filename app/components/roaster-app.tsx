@@ -2,14 +2,15 @@
 
 import {
   AlertTriangle,
+  ChevronDown,
   Check,
   Clipboard,
   Cpu,
   Flame,
   ImageUp,
+  Info,
   LoaderCircle,
   ScanSearch,
-  Sparkles,
   WandSparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -60,6 +61,8 @@ export function RoasterApp() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const [activePriceModel, setActivePriceModel] = useState<RoastModelId | null>(null);
 
   useEffect(
     () => () => {
@@ -75,6 +78,12 @@ export function RoasterApp() {
     return `${file.name} / ${(file.size / 1024 / 1024).toFixed(2)} MB`;
   }, [file]);
   const selectedModel = useMemo(() => getRoastModelOption(model) ?? ROAST_MODEL_OPTIONS[0], [model]);
+  const advancedSummary = useMemo(() => {
+    const intensityLabel = intensityOptions.find((option) => option.value === intensity)?.label ?? "Spicy";
+    const focusSummary = focusAreas.map((area) => categoryLabels[area] ?? area).join(", ");
+
+    return `${intensityLabel} / ${focusSummary} / ${selectedModel.label}`;
+  }, [focusAreas, intensity, selectedModel.label]);
 
   function handleFiles(files: FileList | null) {
     const nextFile = files?.[0];
@@ -150,19 +159,22 @@ export function RoasterApp() {
         <div>
           <p className="eyebrow">AI UX critique</p>
           <h1>Landing Page Roaster</h1>
+          <p className="hero-subcopy">
+            Upload a landing page screenshot and get a prioritized UX/copy teardown in 60 seconds.
+          </p>
         </div>
         <div className="benefit-list" aria-label="Product highlights">
           <span>
             <Check aria-hidden="true" />
-            No signup
+            No signup required
           </span>
           <span>
             <Check aria-hidden="true" />
-            Screenshot in
+            Critique in 60 seconds
           </span>
           <span>
             <Check aria-hidden="true" />
-            Action plan out
+            Prioritized fixes
           </span>
         </div>
       </header>
@@ -172,7 +184,7 @@ export function RoasterApp() {
           <div className="panel-heading">
             <div>
               <p className="eyebrow">Screenshot</p>
-              <h2>Upload a landing page screenshot</h2>
+              <h2>Upload your landing page screenshot</h2>
               <p>Get a blunt UX and copy critique in under a minute.</p>
             </div>
             <ImageUp aria-hidden="true" />
@@ -225,7 +237,7 @@ export function RoasterApp() {
               disabled={isLoading}
             >
               {isLoading ? <LoaderCircle className="spin" aria-hidden="true" /> : <WandSparkles aria-hidden="true" />}
-              <span>{isLoading ? "Analyzing screenshot" : "Start the roast"}</span>
+              <span>{isLoading ? "Analyzing screenshot" : "Roast my landing page"}</span>
             </button>
           ) : null}
 
@@ -236,86 +248,123 @@ export function RoasterApp() {
             </div>
           ) : null}
 
-          <div className="tuning-panel">
-            <div className="tuning-header">
+          <section className={`tuning-panel ${isAdvancedOpen ? "is-open" : ""}`}>
+            <button
+              className="tuning-summary"
+              type="button"
+              aria-expanded={isAdvancedOpen}
+              aria-controls="advanced-settings-body"
+              onClick={() => setIsAdvancedOpen((current) => !current)}
+            >
               <div>
-                <p className="eyebrow">Tune the roast</p>
-                <h3>Optional critique settings</h3>
+                <p className="eyebrow">Advanced settings</p>
+                <h3>Optional critique controls</h3>
+                <span>{advancedSummary}</span>
               </div>
-              <Sparkles aria-hidden="true" />
-            </div>
+              <ChevronDown aria-hidden="true" />
+            </button>
 
-            <div className="control-block">
-              <div className="control-label">
-                <span>Roast intensity</span>
-                <Flame aria-hidden="true" />
-              </div>
-              <div className="segmented" role="radiogroup" aria-label="Roast intensity">
-                {intensityOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    className={intensity === option.value ? "is-selected" : ""}
-                    type="button"
-                    role="radio"
-                    aria-checked={intensity === option.value}
-                    onClick={() => setIntensity(option.value)}
-                  >
-                    <strong>{option.label}</strong>
-                    <span>{option.detail}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            {isAdvancedOpen ? (
+              <div className="tuning-body" id="advanced-settings-body">
+                <div className="control-block">
+                  <div className="control-label">
+                    <span>Roast intensity</span>
+                    <Flame aria-hidden="true" />
+                  </div>
+                  <div className="segmented" role="radiogroup" aria-label="Roast intensity">
+                    {intensityOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        className={intensity === option.value ? "is-selected" : ""}
+                        type="button"
+                        role="radio"
+                        aria-checked={intensity === option.value}
+                        onClick={() => setIntensity(option.value)}
+                      >
+                        <strong>{option.label}</strong>
+                        <span>{option.detail}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="control-block">
-              <div className="control-label">
-                <span>Focus areas</span>
-              </div>
-              <div className="chip-grid" aria-label="Focus areas">
-                {focusOptions.map((option) => {
-                  const isSelected = focusAreas.includes(option.value);
+                <div className="control-block">
+                  <div className="control-label">
+                    <span>Focus areas</span>
+                  </div>
+                  <div className="chip-grid" aria-label="Focus areas">
+                    {focusOptions.map((option) => {
+                      const isSelected = focusAreas.includes(option.value);
 
-                  return (
-                    <button
-                      key={option.value}
-                      className={isSelected ? "chip is-selected" : "chip"}
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() => toggleFocusArea(option.value)}
-                    >
-                      {isSelected ? <Check aria-hidden="true" /> : null}
-                      <span>{option.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+                      return (
+                        <button
+                          key={option.value}
+                          className={isSelected ? "chip is-selected" : "chip"}
+                          type="button"
+                          aria-pressed={isSelected}
+                          onClick={() => toggleFocusArea(option.value)}
+                        >
+                          {isSelected ? <Check aria-hidden="true" /> : null}
+                          <span>{option.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-            <div className="control-block">
-              <label className="control-label" htmlFor="roast-model">
-                <span>Model</span>
-                <Cpu aria-hidden="true" />
-              </label>
-              <div className="model-select-wrap">
-                <select
-                  id="roast-model"
-                  value={model}
-                  onChange={(event) => setModel(event.target.value as RoastModelId)}
-                  aria-describedby="roast-model-detail"
-                >
-                  {ROAST_MODEL_OPTIONS.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label} - {option.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="model-select-detail" id="roast-model-detail">
-                  <strong>{selectedModel.detail}</strong>
-                  <span>{selectedModel.priceHint}</span>
+                <div className="control-block">
+                  <div className="control-label">
+                    <span>Model</span>
+                    <Cpu aria-hidden="true" />
+                  </div>
+                  <div className="model-option-grid" role="radiogroup" aria-label="Model">
+                    {ROAST_MODEL_OPTIONS.map((option) => {
+                      const isSelected = model === option.id;
+                      const isPriceOpen = activePriceModel === option.id;
+                      const detailId = `model-${option.id.replace(/[^a-z0-9]/gi, "-")}-detail`;
+                      const priceId = `model-${option.id.replace(/[^a-z0-9]/gi, "-")}-price`;
+
+                      return (
+                        <div key={option.id} className={`model-option ${isSelected ? "is-selected" : ""}`}>
+                          <button
+                            className="model-choice"
+                            type="button"
+                            role="radio"
+                            aria-checked={isSelected}
+                            aria-describedby={`${detailId} ${priceId}`}
+                            onClick={() => {
+                              setModel(option.id);
+                              setActivePriceModel(null);
+                            }}
+                          >
+                            <span className="model-option-kicker">{option.label}</span>
+                            <strong>{option.name}</strong>
+                            <span id={detailId}>{option.detail}</span>
+                          </button>
+                          <button
+                            className="model-price-trigger"
+                            type="button"
+                            aria-label={`Show pricing for ${option.name}`}
+                            aria-describedby={priceId}
+                            aria-pressed={isPriceOpen}
+                            onClick={() =>
+                              setActivePriceModel((current) => (current === option.id ? null : option.id))
+                            }
+                          >
+                            <Info aria-hidden="true" />
+                          </button>
+                          <div className={`model-price-tooltip ${isPriceOpen ? "is-visible" : ""}`} id={priceId} role="tooltip">
+                            <strong>{option.id}</strong>
+                            <span>{option.priceHint}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            ) : null}
+          </section>
         </div>
 
         <div className="tool-panel result-panel" aria-live="polite">
@@ -337,11 +386,11 @@ function EmptyResults() {
     <div className="empty-results">
       <div className="empty-preview-hero">
         <div className="score-tile is-sample" aria-hidden="true">
-          <span>--</span>
+          <span>68</span>
           <small>/100</small>
         </div>
         <div>
-          <p className="eyebrow">Example result</p>
+          <p className="eyebrow">Sample result</p>
           <h2>See the kind of critique you will get.</h2>
           <p>Specific UX evidence, conversion risk, sharper copy, and an ordered action plan.</p>
         </div>
