@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 - 2026-05-15
+
+- feat: shift desktop focus after results
+- feat: simplify empty result panel
+- chore: stop tracking JetBrains project files
+- feat: collapse sample result preview
+
 ## 0.3.0 - 2026-05-15
 
 - feat: add local meme verdict library
