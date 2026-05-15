@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 - 2026-05-15
+
+- feat: add local meme verdict library
+
 ## 0.2.0 - 2026-05-15
 
 - fix: contain mobile mock preview cta
