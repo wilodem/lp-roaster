@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   Check,
   Clipboard,
+  Cpu,
   Flame,
   ImageUp,
   LoaderCircle,
@@ -12,6 +13,8 @@ import {
   WandSparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_ROAST_MODEL_ID, getRoastModelOption, ROAST_MODEL_OPTIONS } from "@/app/lib/roast-models";
+import type { RoastModelId } from "@/app/lib/roast-models";
 import type { RoastAnalysis, RoastIntensity } from "@/app/types/roast";
 
 type RoastPayload = {
@@ -51,6 +54,7 @@ export function RoasterApp() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [intensity, setIntensity] = useState<RoastIntensity>("spicy");
   const [focusAreas, setFocusAreas] = useState<string[]>(["visual-hierarchy", "messaging", "cta"]);
+  const [model, setModel] = useState<RoastModelId>(DEFAULT_ROAST_MODEL_ID);
   const [analysis, setAnalysis] = useState<RoastAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +74,7 @@ export function RoasterApp() {
     if (!file) return "PNG, JPG, or WebP under 4 MB";
     return `${file.name} / ${(file.size / 1024 / 1024).toFixed(2)} MB`;
   }, [file]);
+  const selectedModel = useMemo(() => getRoastModelOption(model) ?? ROAST_MODEL_OPTIONS[0], [model]);
 
   function handleFiles(files: FileList | null) {
     const nextFile = files?.[0];
@@ -112,6 +117,7 @@ export function RoasterApp() {
       const formData = new FormData();
       formData.append("screenshot", file);
       formData.append("intensity", intensity);
+      formData.append("model", model);
       focusAreas.forEach((area) => formData.append("focusAreas", area));
 
       const response = await fetch("/api/roast", {
@@ -282,6 +288,31 @@ export function RoasterApp() {
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            <div className="control-block">
+              <label className="control-label" htmlFor="roast-model">
+                <span>Model</span>
+                <Cpu aria-hidden="true" />
+              </label>
+              <div className="model-select-wrap">
+                <select
+                  id="roast-model"
+                  value={model}
+                  onChange={(event) => setModel(event.target.value as RoastModelId)}
+                  aria-describedby="roast-model-detail"
+                >
+                  {ROAST_MODEL_OPTIONS.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label} - {option.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="model-select-detail" id="roast-model-detail">
+                  <strong>{selectedModel.detail}</strong>
+                  <span>{selectedModel.priceHint}</span>
+                </div>
               </div>
             </div>
           </div>

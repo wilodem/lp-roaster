@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { DEFAULT_ROAST_MODEL_ID } from "@/app/lib/roast-models";
 
 let client: OpenAI | null = null;
 
@@ -22,5 +23,5 @@ export function getOpenRouterClient() {
 }
 
 export function getRoastModel() {
-  return process.env.OPENROUTER_MODEL ?? "google/gemini-3.1-pro-preview";
+  return process.env.OPENROUTER_MODEL ?? DEFAULT_ROAST_MODEL_ID;
 }

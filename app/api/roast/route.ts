@@ -26,6 +26,7 @@ export async function POST(request: Request) {
       mimeType: screenshot.mimeType,
       intensity: input.intensity,
       focusAreas: input.focusAreas,
+      model: input.model,
       startedAt,
     });
 

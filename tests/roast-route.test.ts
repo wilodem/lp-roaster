@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ROAST_MODEL_OPTIONS } from "@/app/lib/roast-models";
 import type { RoastAnalysis } from "@/app/types/roast";
 
 const analyzeLandingPageScreenshot = vi.fn();
@@ -84,8 +85,36 @@ describe("POST /api/roast", () => {
         intensity: "spicy",
         focusAreas: ["visual-hierarchy", "messaging", "cta"],
         mimeType: "image/png",
+        model: undefined,
       }),
     );
+  });
+
+  it.each(ROAST_MODEL_OPTIONS.map((option) => option.id))("passes allowlisted model %s to the analyzer", async (model) => {
+    analyzeLandingPageScreenshot.mockResolvedValue(sampleAnalysis);
+    const { POST } = await import("@/app/api/roast/route");
+    const request = buildRequest(new File(["png"], "page.png", { type: "image/png" }), model);
+
+    const response = await POST(request);
+
+    expect(response.status).toBe(200);
+    expect(analyzeLandingPageScreenshot).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model,
+      }),
+    );
+  });
+
+  it("returns 400 for unknown model IDs", async () => {
+    const { POST } = await import("@/app/api/roast/route");
+    const request = buildRequest(new File(["png"], "page.png", { type: "image/png" }), "not/a-real-model");
+
+    const response = await POST(request);
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toBe("The roast request was invalid.");
+    expect(analyzeLandingPageScreenshot).not.toHaveBeenCalled();
   });
 
   it("returns 400 for invalid files", async () => {
@@ -127,10 +156,13 @@ describe("POST /api/roast", () => {
   });
 });
 
-function buildRequest(file: File) {
+function buildRequest(file: File, model?: string) {
   const form = new FormData();
   form.append("screenshot", file);
   form.append("intensity", "spicy");
+  if (model) {
+    form.append("model", model);
+  }
   form.append("focusAreas", "visual-hierarchy");
   form.append("focusAreas", "messaging");
   form.append("focusAreas", "cta");

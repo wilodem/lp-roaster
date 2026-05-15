@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { ROAST_MODEL_IDS } from "@/app/lib/roast-models";
 
 export const roastIntensitySchema = z.enum(["helpful", "spicy", "savage"]);
+export const roastModelSchema = z.enum(ROAST_MODEL_IDS);
 
 export const focusAreaSchema = z.enum([
   "visual-hierarchy",
@@ -14,6 +16,7 @@ export const focusAreaSchema = z.enum([
 export const roastRequestSchema = z.object({
   intensity: roastIntensitySchema.default("spicy"),
   focusAreas: z.array(focusAreaSchema).min(1).max(6).default(["visual-hierarchy", "messaging", "cta"]),
+  model: roastModelSchema.optional(),
 });
 
 export const roastModelOutputSchema = z.object({

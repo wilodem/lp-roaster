@@ -2,6 +2,7 @@ import type { ChatCompletionCreateParamsNonStreaming } from "openai/resources/ch
 import { getOpenRouterClient, getRoastModel } from "@/app/lib/openrouter";
 import { buildRoastPrompt, roastSystemPrompt } from "@/app/lib/roast-prompt";
 import { roastJsonSchema, roastModelOutputSchema } from "@/app/lib/roast-schema";
+import type { RoastModelId } from "@/app/lib/roast-models";
 import type { RoastAnalysis, RoastIntensity } from "@/app/types/roast";
 
 type OpenRouterChatCompletionParams = ChatCompletionCreateParamsNonStreaming & {
@@ -20,9 +21,10 @@ export async function analyzeLandingPageScreenshot(options: {
   mimeType: string;
   intensity: RoastIntensity;
   focusAreas: string[];
+  model?: RoastModelId;
   startedAt: number;
 }): Promise<RoastAnalysis> {
-  const model = getRoastModel();
+  const model = options.model ?? getRoastModel();
   const dataUrl = `data:${options.mimeType};base64,${Buffer.from(options.imageBuffer).toString("base64")}`;
 
   const request: OpenRouterChatCompletionParams = {

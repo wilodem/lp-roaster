@@ -35,7 +35,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -160,6 +161,7 @@ p {
 }
 
 .tool-panel {
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -429,6 +431,41 @@ p {
   border-color: #171a17;
   color: var(--ink);
   background: #ebfbff;
+}
+
+.model-select-wrap {
+  display: grid;
+  gap: 8px;
+}
+
+.model-select-wrap select {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  color: var(--ink);
+  background: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.model-select-wrap select:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+.model-select-detail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.model-select-detail strong {
+  color: var(--ink);
 }
 
 .tuning-panel {

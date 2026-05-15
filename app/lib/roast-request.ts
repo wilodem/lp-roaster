@@ -3,6 +3,7 @@ import { roastRequestSchema } from "@/app/lib/roast-schema";
 export function parseRoastForm(formData: FormData) {
   const rawIntensity = formData.get("intensity");
   const rawFocusAreas = formData.getAll("focusAreas");
+  const rawModel = formData.get("model");
 
   const focusAreas =
     rawFocusAreas.length > 0
@@ -17,5 +18,6 @@ export function parseRoastForm(formData: FormData) {
   return roastRequestSchema.parse({
     intensity: typeof rawIntensity === "string" ? rawIntensity : undefined,
     focusAreas,
+    model: typeof rawModel === "string" ? rawModel : undefined,
   });
 }
