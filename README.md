@@ -27,11 +27,13 @@ OPENROUTER_API_KEY=sk-or-v1-your-key
 Optional environment variables:
 
 ```bash
-OPENROUTER_MODEL=google/gemini-3.1-pro-preview
+OPENROUTER_MODEL=google/gemini-3.1-flash-lite
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_APP_TITLE=Landing Page Roaster
 OPENROUTER_SITE_URL=http://localhost:3000
 ```
+
+The UI also exposes a small allowlist of popular OpenRouter vision models. Submitted model IDs are validated server-side; arbitrary model IDs are rejected.
 
 ## Commands
 
@@ -49,6 +51,7 @@ pnpm build
 - `screenshot`: PNG, JPG, or WebP under 4 MB
 - `intensity`: `helpful`, `spicy`, or `savage`
 - `focusAreas`: one or more of `visual-hierarchy`, `messaging`, `cta`, `trust`, `conversion-friction`, `accessibility`
+- `model` (optional): one of the server allowlisted OpenRouter vision models
 
 The response is structured JSON containing score, roast, findings, hero copy rewrites, action plan, model, and latency.
 

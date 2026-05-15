@@ -11,6 +11,7 @@ Landing Page Roaster is intentionally small for the recruiting MVP. This roadmap
 
 ## 0.2.x - Better Critique Quality
 
+- Add a compact allowlisted OpenRouter model selector for cost/speed/depth tradeoffs.
 - Add per-finding confidence and evidence snippets.
 - Add a visual hierarchy checklist that the prompt can reference.
 - Add a compact export format for sharing the teardown in Slack or GitHub issues.
