@@ -334,6 +334,45 @@ describe("analyzeLandingPageScreenshot routing", () => {
     );
   });
 
+  it("maps optional OpenRouter usage and cost into response metadata", async () => {
+    openRouterCreate.mockResolvedValueOnce({
+      model: "test-model",
+      usage: {
+        prompt_tokens: 123,
+        completion_tokens: 456,
+        total_tokens: 579,
+        cost: 0.0042,
+      },
+      choices: [
+        {
+          finish_reason: "stop",
+          message: {
+            content: JSON.stringify(sampleModelOutput),
+          },
+        },
+      ],
+    });
+
+    const analysis = await analyzeLandingPageScreenshot({
+      imageBuffer: new Uint8Array([1]).buffer,
+      mimeType: "image/png",
+      intensity: "spicy",
+      focusAreas: ["messaging", "cta", "trust"],
+      model: "google/gemini-3.1-flash-lite",
+      startedAt: Date.now(),
+    });
+
+    expect(analysis.meta).toMatchObject({
+      model: "test-model",
+      usage: {
+        promptTokens: 123,
+        completionTokens: 456,
+        totalTokens: 579,
+      },
+      costUsd: 0.0042,
+    });
+  });
+
   it("rejects model findings outside the selected focus areas", async () => {
     await expect(
       analyzeLandingPageScreenshot({

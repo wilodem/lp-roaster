@@ -18,6 +18,13 @@ type FlexibleModelMessage = {
   content?: unknown;
 };
 
+type OpenRouterUsage = {
+  prompt_tokens?: unknown;
+  completion_tokens?: unknown;
+  total_tokens?: unknown;
+  cost?: unknown;
+};
+
 export async function analyzeLandingPageScreenshot(options: {
   imageBuffer: ArrayBuffer;
   mimeType: string;
@@ -93,8 +100,33 @@ export async function analyzeLandingPageScreenshot(options: {
     meta: {
       model: response.model ?? model,
       latencyMs: Date.now() - options.startedAt,
+      ...extractUsageMeta(response.usage),
     },
   };
+}
+
+function extractUsageMeta(usage: unknown) {
+  if (!usage || typeof usage !== "object") {
+    return {};
+  }
+
+  const candidate = usage as OpenRouterUsage;
+  const usageMeta = {
+    promptTokens: normalizeUsageNumber(candidate.prompt_tokens),
+    completionTokens: normalizeUsageNumber(candidate.completion_tokens),
+    totalTokens: normalizeUsageNumber(candidate.total_tokens),
+  };
+  const hasUsage = Object.values(usageMeta).some((value) => value !== undefined);
+  const costUsd = normalizeUsageNumber(candidate.cost);
+
+  return {
+    ...(hasUsage ? { usage: usageMeta } : {}),
+    ...(costUsd !== undefined ? { costUsd } : {}),
+  };
+}
+
+function normalizeUsageNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
 function assertFindingsStayInScope(findings: Array<{ category: FocusArea }>, focusAreas: readonly FocusArea[]) {

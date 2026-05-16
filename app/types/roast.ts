@@ -56,6 +56,12 @@ export type RoastAnalysis = {
   meta: {
     model: string;
     latencyMs: number;
+    usage?: {
+      promptTokens?: number;
+      completionTokens?: number;
+      totalTokens?: number;
+    };
+    costUsd?: number;
   };
 };
 

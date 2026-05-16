@@ -151,19 +151,6 @@ p {
   stroke-width: 3;
 }
 
-.model-pill {
-  display: inline-flex;
-  min-height: 30px;
-  align-items: center;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 10px;
-  color: var(--muted);
-  background: rgb(255 255 255 / 0.72);
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
 .workspace {
   display: grid;
   grid-template-columns: minmax(520px, 1.35fr) minmax(320px, 0.65fr);
@@ -205,14 +192,20 @@ p {
   gap: 16px;
 }
 
+.panel-heading > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .panel-heading svg {
+  flex: 0 0 auto;
   width: 28px;
   height: 28px;
   color: var(--accent);
 }
 
 .panel-heading p:not(.eyebrow) {
-  max-width: 360px;
+  max-width: min(100%, 600px);
   margin: 8px 0 0;
   font-size: 0.92rem;
 }
@@ -721,9 +714,14 @@ p {
   box-shadow: 0 8px 24px rgb(23 26 23 / 0.05);
 }
 
-.result-panel.is-loading,
 .result-panel.has-results {
   min-height: 720px;
+}
+
+.result-panel.is-loading {
+  min-height: 0;
+  height: fit-content;
+  align-self: start;
 }
 
 .empty-start {
@@ -792,22 +790,18 @@ p {
 
 .loading-state {
   display: grid;
-  min-height: 640px;
-  align-content: center;
-  justify-items: center;
-  text-align: center;
-}
-
-.loading-state {
-  align-content: stretch;
+  min-height: 0;
+  align-content: start;
   justify-items: stretch;
   gap: 28px;
   text-align: left;
 }
 
 .loading-header {
-  align-items: center;
-  justify-content: flex-start;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: start;
+  justify-content: stretch;
 }
 
 .loading-header svg {
@@ -917,6 +911,36 @@ p {
   color: #583024;
 }
 
+.roast-readout,
+.diagnosis-section,
+.fixes-section,
+.technical-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.roast-readout {
+  grid-template-columns: minmax(0, 0.95fr) minmax(260px, 0.85fr);
+  align-items: stretch;
+}
+
+.roast-readout .roast-strip,
+.roast-readout .meme-panel {
+  height: 100%;
+}
+
+.roast-readout .meme-layout {
+  grid-template-columns: 1fr;
+}
+
+.roast-readout .meme-media {
+  min-height: 156px;
+}
+
+.roast-readout .meme-caption {
+  font-size: clamp(1.05rem, 2.4vw, 1.55rem);
+}
+
 .findings-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -958,6 +982,13 @@ p {
   font-size: 0.72rem;
   font-weight: 850;
   text-transform: uppercase;
+}
+
+.fixes-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
 }
 
 .rewrite-panel,
@@ -1019,6 +1050,77 @@ p {
 
 .meme-panel {
   background: #fbfff0;
+}
+
+.technical-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgb(240 243 235 / 0.48);
+}
+
+.technical-summary {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 0;
+  padding: 14px;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+}
+
+.technical-summary h3 {
+  margin: 0;
+  font-size: 0.96rem;
+}
+
+.technical-summary svg {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  transition: transform 160ms ease;
+}
+
+.technical-panel.is-open .technical-summary svg {
+  transform: rotate(180deg);
+}
+
+.technical-body {
+  border-top: 1px solid var(--line);
+  padding: 0 14px 14px;
+}
+
+.technical-body dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin: 0;
+  padding-top: 14px;
+}
+
+.technical-body dl div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.technical-body dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.technical-body dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 720;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .meme-layout {
@@ -1157,7 +1259,6 @@ p {
     transition: none;
   }
 
-  .result-panel.is-loading,
   .result-panel.has-results {
     min-height: 520px;
   }
@@ -1185,6 +1286,9 @@ p {
 
   .segmented,
   .findings-grid,
+  .fixes-grid,
+  .roast-readout,
+  .technical-body dl,
   .meme-layout {
     grid-template-columns: 1fr;
   }

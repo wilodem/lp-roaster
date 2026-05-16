@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getMemeTemplate } from "@/app/lib/meme-library";
-import { DEFAULT_ROAST_MODEL_ID, ROAST_MODEL_OPTIONS } from "@/app/lib/roast-models";
+import { DEFAULT_ROAST_MODEL_ID, ROAST_MODEL_OPTIONS, getRoastModelOption } from "@/app/lib/roast-models";
 import type { RoastModelId } from "@/app/lib/roast-models";
 import type { FindingCategory, RoastAnalysis, RoastIntensity } from "@/app/types/roast";
 
@@ -217,15 +217,6 @@ export function RoasterApp() {
             <span className="upload-meta">{selectedFileMeta}</span>
           </button>
 
-          <div className="preview-frame" aria-label="Screenshot preview">
-            {previewUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={previewUrl} alt="Uploaded landing page screenshot preview" />
-            ) : (
-              <MockLandingPage />
-            )}
-          </div>
-
           {file ? (
             <button
               className={`primary-action ${isLoading ? "is-busy" : ""}`}
@@ -244,6 +235,15 @@ export function RoasterApp() {
               <span>{error}</span>
             </div>
           ) : null}
+
+          <div className="preview-frame" aria-label="Screenshot preview">
+            {previewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={previewUrl} alt="Uploaded landing page screenshot preview" />
+            ) : (
+              <MockLandingPage />
+            )}
+          </div>
 
           <section className={`tuning-panel ${isAdvancedOpen ? "is-open" : ""}`}>
             <button
@@ -438,6 +438,43 @@ export function formatLoadingFocusAreas(focusAreas: FindingCategory[]) {
   return `${labels.slice(0, -1).join(", ")}, and ${labels.at(-1)}`;
 }
 
+export function formatRoastCopyText(analysis: RoastAnalysis) {
+  const findingsText = analysis.findings.map((finding, index) =>
+    [
+      `${index + 1}. ${categoryLabels[finding.category] ?? finding.category}: ${finding.issue}`,
+      `Impact/effort: ${finding.impact} impact / ${finding.effort} effort`,
+      `Evidence: ${finding.evidence}`,
+      `Why it matters: ${finding.whyItMatters}`,
+      `Recommendation: ${finding.recommendation}`,
+    ].join("\n"),
+  );
+
+  return [
+    "Verdict",
+    `Score: ${analysis.summary.score}/100`,
+    `Page type: ${analysis.summary.pageType}`,
+    `Audience: ${analysis.summary.audience}`,
+    `Verdict: ${analysis.summary.verdict}`,
+    "",
+    "Roast",
+    `Severity: ${analysis.roast.severity}`,
+    `Title: ${analysis.roast.title}`,
+    analysis.roast.body,
+    "",
+    "Diagnosis",
+    ...findingsText,
+    "",
+    "Fixes",
+    "Copy fix",
+    `Headline: ${analysis.rewrites.headline}`,
+    `Subheadline: ${analysis.rewrites.subheadline}`,
+    `CTA: ${analysis.rewrites.cta}`,
+    "",
+    "Action plan",
+    ...analysis.actionPlan.map((item) => `${item.priority}. ${item.label} - ${item.rationale}`),
+  ].join("\n");
+}
+
 function Results({
   analysis,
   copied,
@@ -447,119 +484,216 @@ function Results({
   copied: string | null;
   onCopy: (key: string, value: string) => Promise<void>;
 }) {
-  const summaryText = [
-    `Score: ${analysis.summary.score}/100`,
-    `Verdict: ${analysis.summary.verdict}`,
-    "",
-    `Roast: ${analysis.roast.title}`,
-    analysis.roast.body,
-    "",
-    "Top fixes:",
-    ...analysis.actionPlan.map((item) => `${item.priority}. ${item.label} - ${item.rationale}`),
-  ].join("\n");
-
-  const rewriteText = [
-    `Headline: ${analysis.rewrites.headline}`,
-    `Subheadline: ${analysis.rewrites.subheadline}`,
-    `CTA: ${analysis.rewrites.cta}`,
-  ].join("\n");
+  const [isTechnicalOpen, setIsTechnicalOpen] = useState(false);
+  const copyRoastText = formatRoastCopyText(analysis);
   const memeTemplate = getMemeTemplate(analysis.meme.templateId);
 
   return (
     <div className="results">
-      <div className="result-hero">
+      <div className="result-hero" aria-label="Verdict">
         <div className="score-tile" aria-label={`Score ${analysis.summary.score} out of 100`}>
           <span>{analysis.summary.score}</span>
           <small>/100</small>
         </div>
         <div>
-          <p className="eyebrow">{analysis.summary.pageType}</p>
+          <p className="eyebrow">Verdict / {analysis.summary.pageType}</p>
           <h2>{analysis.summary.verdict}</h2>
           <p>{analysis.summary.audience}</p>
         </div>
         <CopyButton
-          label="Copy summary"
-          copied={copied === "summary"}
-          onClick={() => onCopy("summary", summaryText)}
+          label="Copy roast"
+          copied={copied === "roast"}
+          onClick={() => onCopy("roast", copyRoastText)}
         />
       </div>
 
-      <section className="roast-strip" aria-label="Roast">
-        <div>
-          <p className="eyebrow">{analysis.roast.severity} roast</p>
-          <h3>{analysis.roast.title}</h3>
-          <p>{analysis.roast.body}</p>
-        </div>
+      <section className="roast-readout" aria-label="Roast">
+        <section className="roast-strip" aria-label="Spicy roast">
+          <div>
+            <p className="eyebrow">{analysis.roast.severity} roast</p>
+            <h3>{analysis.roast.title}</h3>
+            <p>{analysis.roast.body}</p>
+          </div>
+        </section>
+
+        <MemeVerdict
+          altText={analysis.meme.altText}
+          caption={analysis.meme.caption}
+          reason={analysis.meme.reason}
+          template={memeTemplate}
+        />
       </section>
 
-      <section className="findings-grid" aria-label="Findings">
-        {analysis.findings.map((finding) => (
-          <article className="finding-card" key={`${finding.category}-${finding.issue}`}>
-            <div className="finding-topline">
-              <span>{categoryLabels[finding.category] ?? finding.category}</span>
-              <span>
-                {finding.impact} impact / {finding.effort} effort
-              </span>
-            </div>
-            <h3>{finding.issue}</h3>
-            <p>{finding.evidence}</p>
-            <strong>{finding.whyItMatters}</strong>
-            <p>{finding.recommendation}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="rewrite-panel" aria-label="Suggested hero rewrite">
+      <section className="diagnosis-section" aria-label="Diagnosis">
         <div className="section-title-row">
           <div>
-            <p className="eyebrow">Rewrite</p>
-            <h3>Sharper hero copy</h3>
+            <p className="eyebrow">Diagnosis</p>
+            <h3>What is holding the page back</h3>
           </div>
-          <CopyButton label="Copy rewrite" copied={copied === "rewrite"} onClick={() => onCopy("rewrite", rewriteText)} />
         </div>
-        <dl>
-          <div>
-            <dt>Headline</dt>
-            <dd>{analysis.rewrites.headline}</dd>
-          </div>
-          <div>
-            <dt>Subheadline</dt>
-            <dd>{analysis.rewrites.subheadline}</dd>
-          </div>
-          <div>
-            <dt>CTA</dt>
-            <dd>{analysis.rewrites.cta}</dd>
-          </div>
-        </dl>
+        <div className="findings-grid">
+          {analysis.findings.map((finding) => (
+            <article className="finding-card" key={`${finding.category}-${finding.issue}`}>
+              <div className="finding-topline">
+                <span>{categoryLabels[finding.category] ?? finding.category}</span>
+                <span>
+                  {finding.impact} impact / {finding.effort} effort
+                </span>
+              </div>
+              <h3>{finding.issue}</h3>
+              <p>{finding.evidence}</p>
+              <strong>{finding.whyItMatters}</strong>
+              <p>{finding.recommendation}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
-      <section className="action-list" aria-label="Action plan">
+      <section className="fixes-section" aria-label="Fixes">
         <div className="section-title-row">
           <div>
-            <p className="eyebrow">Action plan</p>
-            <h3>Fix in this order</h3>
+            <p className="eyebrow">Fixes</p>
+            <h3>Rewrite, then execute</h3>
           </div>
-          <span className="model-pill">{analysis.meta.model}</span>
         </div>
-        {analysis.actionPlan.map((item) => (
-          <div className="action-item" key={item.priority}>
-            <span>{item.priority}</span>
-            <div>
-              <strong>{item.label}</strong>
-              <p>{item.rationale}</p>
+
+        <div className="fixes-grid">
+          <section className="rewrite-panel" aria-label="Suggested hero rewrite">
+            <div className="section-title-row">
+              <div>
+                <p className="eyebrow">Copy fix</p>
+                <h3>Sharper hero copy</h3>
+              </div>
             </div>
-          </div>
-        ))}
+            <dl>
+              <div>
+                <dt>Headline</dt>
+                <dd>{analysis.rewrites.headline}</dd>
+              </div>
+              <div>
+                <dt>Subheadline</dt>
+                <dd>{analysis.rewrites.subheadline}</dd>
+              </div>
+              <div>
+                <dt>CTA</dt>
+                <dd>{analysis.rewrites.cta}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section className="action-list" aria-label="Action plan">
+            <div className="section-title-row">
+              <div>
+                <p className="eyebrow">Action plan</p>
+                <h3>Fix in this order</h3>
+              </div>
+            </div>
+            {analysis.actionPlan.map((item) => (
+              <div className="action-item" key={item.priority}>
+                <span>{item.priority}</span>
+                <div>
+                  <strong>{item.label}</strong>
+                  <p>{item.rationale}</p>
+                </div>
+              </div>
+            ))}
+          </section>
+        </div>
       </section>
 
-      <MemeVerdict
-        altText={analysis.meme.altText}
-        caption={analysis.meme.caption}
-        reason={analysis.meme.reason}
-        template={memeTemplate}
+      <TechnicalDetails
+        analysis={analysis}
+        isOpen={isTechnicalOpen}
+        onToggle={() => setIsTechnicalOpen((current) => !current)}
       />
     </div>
   );
+}
+
+function TechnicalDetails({
+  analysis,
+  isOpen,
+  onToggle,
+}: {
+  analysis: RoastAnalysis;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  const modelOption = getRoastModelOption(analysis.meta.model);
+
+  return (
+    <section className={`technical-panel ${isOpen ? "is-open" : ""}`} aria-label="Technical details">
+      <button className="technical-summary" type="button" aria-expanded={isOpen} onClick={onToggle}>
+        <div>
+          <p className="eyebrow">Technical details</p>
+          <h3>Model, latency, and usage</h3>
+        </div>
+        <ChevronDown aria-hidden="true" />
+      </button>
+
+      {isOpen ? (
+        <div className="technical-body">
+          <dl>
+            <div>
+              <dt>Model</dt>
+              <dd>{analysis.meta.model}</dd>
+            </div>
+            <div>
+              <dt>Latency</dt>
+              <dd>{formatLatency(analysis.meta.latencyMs)}</dd>
+            </div>
+            {analysis.meta.usage?.promptTokens !== undefined ? (
+              <div>
+                <dt>Prompt tokens</dt>
+                <dd>{formatTokenCount(analysis.meta.usage.promptTokens)}</dd>
+              </div>
+            ) : null}
+            {analysis.meta.usage?.completionTokens !== undefined ? (
+              <div>
+                <dt>Completion tokens</dt>
+                <dd>{formatTokenCount(analysis.meta.usage.completionTokens)}</dd>
+              </div>
+            ) : null}
+            {analysis.meta.usage?.totalTokens !== undefined ? (
+              <div>
+                <dt>Total tokens</dt>
+                <dd>{formatTokenCount(analysis.meta.usage.totalTokens)}</dd>
+              </div>
+            ) : null}
+            {analysis.meta.costUsd !== undefined ? (
+              <div>
+                <dt>Request cost</dt>
+                <dd>{formatUsd(analysis.meta.costUsd)}</dd>
+              </div>
+            ) : null}
+            {modelOption ? (
+              <div>
+                <dt>Price hint</dt>
+                <dd>{modelOption.priceHint}</dd>
+              </div>
+            ) : null}
+          </dl>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function formatLatency(latencyMs: number) {
+  return latencyMs >= 1000 ? `${(latencyMs / 1000).toFixed(1)}s` : `${latencyMs}ms`;
+}
+
+function formatTokenCount(tokens: number) {
+  return new Intl.NumberFormat("en-US").format(tokens);
+}
+
+function formatUsd(costUsd: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: costUsd < 0.01 ? 4 : 2,
+    maximumFractionDigits: costUsd < 0.01 ? 4 : 2,
+  }).format(costUsd);
 }
 
 function MemeVerdict({
@@ -578,7 +712,7 @@ function MemeVerdict({
       <div className="section-title-row">
         <div>
           <p className="eyebrow">Meme verdict</p>
-          <h3>The final read</h3>
+          <h3>The quick read</h3>
         </div>
       </div>
 

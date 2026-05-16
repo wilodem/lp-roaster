@@ -80,6 +80,14 @@ export const roastAnalysisSchema = roastModelOutputSchema.extend({
   meta: z.object({
     model: z.string().min(1),
     latencyMs: z.number().int().nonnegative(),
+    usage: z
+      .object({
+        promptTokens: z.number().int().nonnegative().optional(),
+        completionTokens: z.number().int().nonnegative().optional(),
+        totalTokens: z.number().int().nonnegative().optional(),
+      })
+      .optional(),
+    costUsd: z.number().nonnegative().optional(),
   }),
 });
 
