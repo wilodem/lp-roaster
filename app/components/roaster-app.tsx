@@ -18,7 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getMemeTemplate } from "@/app/lib/meme-library";
 import { DEFAULT_ROAST_MODEL_ID, ROAST_MODEL_OPTIONS } from "@/app/lib/roast-models";
 import type { RoastModelId } from "@/app/lib/roast-models";
-import type { RoastAnalysis, RoastIntensity } from "@/app/types/roast";
+import type { FindingCategory, RoastAnalysis, RoastIntensity } from "@/app/types/roast";
 
 type RoastPayload = {
   analysis: RoastAnalysis;
@@ -32,23 +32,23 @@ const intensityOptions: Array<{ value: RoastIntensity; label: string; detail: st
   { value: "savage", label: "Savage", detail: "Sharpest useful take" },
 ];
 
-const focusOptions = [
-  { value: "visual-hierarchy", label: "Hierarchy" },
-  { value: "messaging", label: "Messaging" },
-  { value: "cta", label: "CTA" },
-  { value: "trust", label: "Trust" },
-  { value: "conversion-friction", label: "Friction" },
-  { value: "accessibility", label: "A11y" },
-];
-
-const categoryLabels: Record<string, string> = {
-  "visual-hierarchy": "Hierarchy",
-  messaging: "Messaging",
-  cta: "CTA",
-  trust: "Trust",
-  "conversion-friction": "Friction",
-  accessibility: "A11y",
+const focusAreaLabels: Record<FindingCategory, { display: string; loading: string }> = {
+  "visual-hierarchy": { display: "Hierarchy", loading: "hierarchy" },
+  messaging: { display: "Messaging", loading: "messaging" },
+  cta: { display: "CTA", loading: "CTA clarity" },
+  trust: { display: "Trust", loading: "trust" },
+  "conversion-friction": { display: "Friction", loading: "conversion friction" },
+  accessibility: { display: "A11y", loading: "accessibility" },
 };
+
+const focusOptions = Object.entries(focusAreaLabels).map(([value, labels]) => ({
+  value: value as FindingCategory,
+  label: labels.display,
+}));
+
+const categoryLabels = Object.fromEntries(
+  focusOptions.map((option) => [option.value, option.label]),
+) as Record<FindingCategory, string>;
 
 export function RoasterApp() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -56,7 +56,7 @@ export function RoasterApp() {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [intensity, setIntensity] = useState<RoastIntensity>("spicy");
-  const [focusAreas, setFocusAreas] = useState<string[]>(["visual-hierarchy", "messaging", "cta"]);
+  const [focusAreas, setFocusAreas] = useState<FindingCategory[]>(["visual-hierarchy", "messaging", "cta"]);
   const [model, setModel] = useState<RoastModelId>(DEFAULT_ROAST_MODEL_ID);
   const [analysis, setAnalysis] = useState<RoastAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -99,7 +99,7 @@ export function RoasterApp() {
     setError(null);
   }
 
-  function toggleFocusArea(value: string) {
+  function toggleFocusArea(value: FindingCategory) {
     setFocusAreas((current) => {
       if (current.includes(value)) {
         return current.length === 1 ? current : current.filter((item) => item !== value);
@@ -371,7 +371,7 @@ export function RoasterApp() {
           aria-live="polite"
         >
           {isLoading ? (
-            <LoadingState />
+            <LoadingState focusAreas={focusAreas} />
           ) : analysis ? (
             <Results analysis={analysis} copied={copied} onCopy={copyText} />
           ) : (
@@ -402,14 +402,14 @@ function EmptyResults({ isReady }: { isReady: boolean }) {
   );
 }
 
-function LoadingState() {
+function LoadingState({ focusAreas }: { focusAreas: FindingCategory[] }) {
   return (
     <div className="loading-state">
       <div className="loading-header">
         <LoaderCircle className="spin" aria-hidden="true" />
         <div>
           <p className="eyebrow">Analyzing</p>
-          <h2>Reading hierarchy, copy, trust, and CTA clarity.</h2>
+          <h2>Reading {formatLoadingFocusAreas(focusAreas)}.</h2>
         </div>
       </div>
       <div className="loading-track" aria-hidden="true">
@@ -422,6 +422,20 @@ function LoadingState() {
       </div>
     </div>
   );
+}
+
+export function formatLoadingFocusAreas(focusAreas: FindingCategory[]) {
+  const labels = focusAreas.map((area) => focusAreaLabels[area].loading);
+
+  if (labels.length <= 1) {
+    return labels[0] ?? "selected focus areas";
+  }
+
+  if (labels.length === 2) {
+    return `${labels[0]} and ${labels[1]}`;
+  }
+
+  return `${labels.slice(0, -1).join(", ")}, and ${labels.at(-1)}`;
 }
 
 function Results({
