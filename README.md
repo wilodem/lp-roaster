@@ -57,7 +57,7 @@ This section describes the public API shape. Implementation rules for validation
 - `focusAreas`: one or more of `visual-hierarchy`, `messaging`, `cta`, `trust`, `conversion-friction`, `accessibility`
 - `model` (optional): one of the server allowlisted OpenRouter vision models
 
-The response is structured JSON containing score, roast, findings, hero copy rewrites, action plan, a local meme verdict, model, and latency.
+The response is structured JSON containing score, roast, findings, hero copy rewrites, action plan, a local meme verdict, model, and latency. Each `analysis.findings[].category` is constrained to one of the submitted `focusAreas`.
 
 `analysis.meme` contains:
 

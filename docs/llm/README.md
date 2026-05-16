@@ -13,6 +13,10 @@ The critique is intentionally split into:
 - `actionPlan`: prioritized next fixes
 - `meme`: a local meme template classification for the overall verdict
 
+Selected `focusAreas` are treated as the hard scope for `findings`. Every `findings[].category` must be one of the submitted focus areas, while the other response sections should primarily reflect that selected scope.
+
+The prompt also sets section-specific voice rules: the verdict is lightly roasty, the roast and meme carry the main punchline, finding evidence stays factual, and recommendations, rewrites, and action-plan items stay practical rather than parody.
+
 The server adds `meta` after validation, because model and latency are runtime facts rather than model-generated content.
 
 ## Model Contract
@@ -21,11 +25,11 @@ The route uses OpenRouter chat completions with:
 
 - text prompt
 - image data URL
-- `response_format: json_schema`
+- dynamic `response_format: json_schema` scoped to the selected `focusAreas`
 - OpenRouter `response-healing` for malformed JSON recovery
 - `provider.require_parameters` so routing does not silently ignore structured output requirements
 
-The parsed model output is validated again with Zod before being returned to the client.
+The parsed model output is validated again with Zod before being returned to the client. A deterministic guard then rejects any finding whose category falls outside the selected focus areas, which also protects prompt-only model paths.
 
 The UI can request one of a small server-validated OpenRouter model allowlist from the collapsed Advanced settings panel:
 

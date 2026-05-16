@@ -13,6 +13,7 @@ export const focusAreaSchema = z.enum([
   "conversion-friction",
   "accessibility",
 ]);
+export type FocusArea = z.infer<typeof focusAreaSchema>;
 
 export const roastRequestSchema = z.object({
   intensity: roastIntensitySchema.default("spicy"),
@@ -82,123 +83,122 @@ export const roastAnalysisSchema = roastModelOutputSchema.extend({
   }),
 });
 
-export const roastJsonSchema = {
-  name: "landing_page_roast",
-  strict: true,
-  schema: {
-    type: "object",
-    additionalProperties: false,
-    required: ["summary", "roast", "findings", "rewrites", "actionPlan", "meme"],
-    properties: {
-      summary: {
-        type: "object",
-        additionalProperties: false,
-        required: ["pageType", "audience", "score", "verdict"],
-        properties: {
-          pageType: { type: "string" },
-          audience: { type: "string" },
-          score: { type: "integer", minimum: 0, maximum: 100 },
-          verdict: { type: "string" },
-        },
-      },
-      roast: {
-        type: "object",
-        additionalProperties: false,
-        required: ["title", "body", "severity"],
-        properties: {
-          title: { type: "string" },
-          body: { type: "string" },
-          severity: { type: "string", enum: ["warm", "spicy", "savage"] },
-        },
-      },
-      findings: {
-        type: "array",
-        minItems: 3,
-        maxItems: 6,
-        items: {
+export function buildRoastJsonSchema(focusAreas: readonly FocusArea[]) {
+  const categoryEnum = [...new Set(focusAreas)];
+
+  return {
+    name: "landing_page_roast",
+    strict: true,
+    schema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["summary", "roast", "findings", "rewrites", "actionPlan", "meme"],
+      properties: {
+        summary: {
           type: "object",
           additionalProperties: false,
-          required: [
-            "category",
-            "issue",
-            "evidence",
-            "whyItMatters",
-            "recommendation",
-            "impact",
-            "effort"
-          ],
+          required: ["pageType", "audience", "score", "verdict"],
           properties: {
-            category: {
-              type: "string",
-              enum: [
-                "visual-hierarchy",
-                "messaging",
-                "cta",
-                "trust",
-                "conversion-friction",
-                "accessibility"
-              ],
+            pageType: { type: "string" },
+            audience: { type: "string" },
+            score: { type: "integer", minimum: 0, maximum: 100 },
+            verdict: { type: "string" },
+          },
+        },
+        roast: {
+          type: "object",
+          additionalProperties: false,
+          required: ["title", "body", "severity"],
+          properties: {
+            title: { type: "string" },
+            body: { type: "string" },
+            severity: { type: "string", enum: ["warm", "spicy", "savage"] },
+          },
+        },
+        findings: {
+          type: "array",
+          minItems: 3,
+          maxItems: 6,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: [
+              "category",
+              "issue",
+              "evidence",
+              "whyItMatters",
+              "recommendation",
+              "impact",
+              "effort"
+            ],
+            properties: {
+              category: {
+                type: "string",
+                enum: categoryEnum,
+              },
+              issue: { type: "string" },
+              evidence: { type: "string" },
+              whyItMatters: { type: "string" },
+              recommendation: { type: "string" },
+              impact: { type: "string", enum: ["low", "medium", "high"] },
+              effort: { type: "string", enum: ["low", "medium", "high"] },
             },
-            issue: { type: "string" },
-            evidence: { type: "string" },
-            whyItMatters: { type: "string" },
-            recommendation: { type: "string" },
-            impact: { type: "string", enum: ["low", "medium", "high"] },
-            effort: { type: "string", enum: ["low", "medium", "high"] },
           },
         },
-      },
-      rewrites: {
-        type: "object",
-        additionalProperties: false,
-        required: ["headline", "subheadline", "cta"],
-        properties: {
-          headline: { type: "string" },
-          subheadline: { type: "string" },
-          cta: { type: "string" },
-        },
-      },
-      actionPlan: {
-        type: "array",
-        minItems: 3,
-        maxItems: 5,
-        items: {
+        rewrites: {
           type: "object",
           additionalProperties: false,
-          required: ["priority", "label", "rationale"],
+          required: ["headline", "subheadline", "cta"],
           properties: {
-            priority: { type: "integer", minimum: 1, maximum: 5 },
-            label: { type: "string" },
-            rationale: { type: "string" },
+            headline: { type: "string" },
+            subheadline: { type: "string" },
+            cta: { type: "string" },
           },
         },
-      },
-      meme: {
-        type: "object",
-        additionalProperties: false,
-        required: ["templateId", "caption", "reason", "altText"],
-        properties: {
-          templateId: {
-            type: "string",
-            enum: MEME_TEMPLATE_IDS,
+        actionPlan: {
+          type: "array",
+          minItems: 3,
+          maxItems: 5,
+          items: {
+            type: "object",
+            additionalProperties: false,
+            required: ["priority", "label", "rationale"],
+            properties: {
+              priority: { type: "integer", minimum: 1, maximum: 5 },
+              label: { type: "string" },
+              rationale: { type: "string" },
+            },
           },
-          caption: {
-            type: "string",
-            minLength: 1,
-            maxLength: 90,
-          },
-          reason: {
-            type: "string",
-            minLength: 1,
-            maxLength: 240,
-          },
-          altText: {
-            type: "string",
-            minLength: 1,
-            maxLength: 260,
+        },
+        meme: {
+          type: "object",
+          additionalProperties: false,
+          required: ["templateId", "caption", "reason", "altText"],
+          properties: {
+            templateId: {
+              type: "string",
+              enum: MEME_TEMPLATE_IDS,
+            },
+            caption: {
+              type: "string",
+              minLength: 1,
+              maxLength: 90,
+            },
+            reason: {
+              type: "string",
+              minLength: 1,
+              maxLength: 240,
+            },
+            altText: {
+              type: "string",
+              minLength: 1,
+              maxLength: 260,
+            },
           },
         },
       },
     },
-  },
-} as const;
+  } as const;
+}
+
+export const roastJsonSchema = buildRoastJsonSchema(focusAreaSchema.options);

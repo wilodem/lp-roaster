@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MEME_TEMPLATE_IDS } from "@/app/lib/meme-library";
 import { analyzeLandingPageScreenshot, extractModelContent, normalizeRoastModelOutput, parseModelJson } from "@/app/lib/roast-ai";
 import { buildRoastPrompt } from "@/app/lib/roast-prompt";
-import { roastModelOutputSchema } from "@/app/lib/roast-schema";
+import { buildRoastJsonSchema, roastModelOutputSchema } from "@/app/lib/roast-schema";
 
 const openRouterCreate = vi.hoisted(() => vi.fn());
 
@@ -254,6 +254,26 @@ describe("meme contract", () => {
   });
 });
 
+describe("focus area scope", () => {
+  it("limits the JSON schema finding categories to the selected focus areas", () => {
+    const schema = buildRoastJsonSchema(["messaging", "cta"]);
+
+    expect(schema.schema.properties.findings.items.properties.category.enum).toEqual(["messaging", "cta"]);
+  });
+
+  it("adds hard scope and section voice rules to the prompt", () => {
+    const prompt = buildRoastPrompt({
+      intensity: "spicy",
+      focusAreas: ["messaging", "cta"],
+    });
+
+    expect(prompt).toContain("Treat the selected focus areas as the hard review scope.");
+    expect(prompt).toContain("Every findings[].category value must be one of the selected focus areas exactly.");
+    expect(prompt).toContain("summary.verdict: write one short, lightly roasty diagnostic line.");
+    expect(prompt).toContain("findings[].evidence: state only raw visible evidence, with no joke.");
+  });
+});
+
 describe("analyzeLandingPageScreenshot routing", () => {
   beforeEach(() => {
     openRouterCreate.mockReset();
@@ -275,7 +295,7 @@ describe("analyzeLandingPageScreenshot routing", () => {
       imageBuffer: new Uint8Array([1]).buffer,
       mimeType: "image/png",
       intensity: "spicy",
-      focusAreas: ["visual-hierarchy", "messaging", "cta"],
+      focusAreas: ["messaging", "cta", "trust"],
       model: "google/gemini-3.1-flash-lite",
       startedAt: Date.now(),
     });
@@ -288,6 +308,10 @@ describe("analyzeLandingPageScreenshot routing", () => {
         },
       }),
     );
+    expect(
+      openRouterCreate.mock.calls[0][0].response_format.json_schema.schema.properties.findings.items.properties.category
+        .enum,
+    ).toEqual(["messaging", "cta", "trust"]);
   });
 
   it("avoids native schema parameters for prompt-shaped Anthropic models", async () => {
@@ -295,7 +319,7 @@ describe("analyzeLandingPageScreenshot routing", () => {
       imageBuffer: new Uint8Array([1]).buffer,
       mimeType: "image/png",
       intensity: "spicy",
-      focusAreas: ["visual-hierarchy", "messaging", "cta"],
+      focusAreas: ["messaging", "cta", "trust"],
       model: "anthropic/claude-sonnet-4.6",
       startedAt: Date.now(),
     });
@@ -308,5 +332,18 @@ describe("analyzeLandingPageScreenshot routing", () => {
         response_format: undefined,
       }),
     );
+  });
+
+  it("rejects model findings outside the selected focus areas", async () => {
+    await expect(
+      analyzeLandingPageScreenshot({
+        imageBuffer: new Uint8Array([1]).buffer,
+        mimeType: "image/png",
+        intensity: "spicy",
+        focusAreas: ["messaging", "cta"],
+        model: "anthropic/claude-sonnet-4.6",
+        startedAt: Date.now(),
+      }),
+    ).rejects.toThrow("outside requested focus areas: trust");
   });
 });

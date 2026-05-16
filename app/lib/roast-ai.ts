@@ -1,7 +1,8 @@
 import type { ChatCompletionCreateParamsNonStreaming } from "openai/resources/chat/completions";
 import { getOpenRouterClient, getRoastModel } from "@/app/lib/openrouter";
 import { buildRoastPrompt, roastSystemPrompt } from "@/app/lib/roast-prompt";
-import { roastJsonSchema, roastModelOutputSchema } from "@/app/lib/roast-schema";
+import { buildRoastJsonSchema, roastModelOutputSchema } from "@/app/lib/roast-schema";
+import type { FocusArea } from "@/app/lib/roast-schema";
 import { shouldRequireStructuredOutputSupport, shouldUseJsonSchemaResponseFormat } from "@/app/lib/roast-models";
 import type { RoastModelId } from "@/app/lib/roast-models";
 import type { RoastAnalysis, RoastIntensity } from "@/app/types/roast";
@@ -21,7 +22,7 @@ export async function analyzeLandingPageScreenshot(options: {
   imageBuffer: ArrayBuffer;
   mimeType: string;
   intensity: RoastIntensity;
-  focusAreas: string[];
+  focusAreas: FocusArea[];
   model?: RoastModelId;
   startedAt: number;
 }): Promise<RoastAnalysis> {
@@ -39,7 +40,7 @@ export async function analyzeLandingPageScreenshot(options: {
     response_format: useJsonSchemaResponseFormat
       ? {
           type: "json_schema",
-          json_schema: roastJsonSchema,
+          json_schema: buildRoastJsonSchema(options.focusAreas),
         }
       : undefined,
     messages: [
@@ -85,6 +86,8 @@ export async function analyzeLandingPageScreenshot(options: {
     throw new Error(`OpenRouter returned analysis with an unexpected shape: ${formatSchemaIssues(analysis.error.issues)}.`);
   }
 
+  assertFindingsStayInScope(analysis.data.findings, options.focusAreas);
+
   return {
     ...analysis.data,
     meta: {
@@ -92,6 +95,21 @@ export async function analyzeLandingPageScreenshot(options: {
       latencyMs: Date.now() - options.startedAt,
     },
   };
+}
+
+function assertFindingsStayInScope(findings: Array<{ category: FocusArea }>, focusAreas: readonly FocusArea[]) {
+  const allowedCategories = new Set(focusAreas);
+  const outOfScopeCategories = findings
+    .map((finding) => finding.category)
+    .filter((category) => !allowedCategories.has(category));
+
+  if (outOfScopeCategories.length > 0) {
+    throw new Error(
+      `OpenRouter returned finding categories outside requested focus areas: ${[
+        ...new Set(outOfScopeCategories),
+      ].join(", ")}. Requested focus areas: ${focusAreas.join(", ")}.`,
+    );
+  }
 }
 
 export function extractModelContent(message: FlexibleModelMessage | undefined) {
