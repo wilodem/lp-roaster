@@ -20,19 +20,10 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Set the required environment variable:
+Set the only required environment variable:
 
 ```bash
 OPENROUTER_API_KEY=sk-or-v1-your-key
-```
-
-Optional environment variables:
-
-```bash
-OPENROUTER_MODEL=google/gemini-3.1-flash-lite
-OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
-OPENROUTER_APP_TITLE=Landing Page Roaster
-OPENROUTER_SITE_URL=http://localhost:3000
 ```
 
 The UI exposes a small allowlist of popular OpenRouter vision models inside Advanced settings. Submitted model IDs are validated server-side; arbitrary model IDs are rejected. Approximate model prices are available as hover/focus/tap info in that advanced selector, but are not shown in the primary upload flow.

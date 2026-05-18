@@ -1,6 +1,12 @@
 import OpenAI from "openai";
 import { DEFAULT_ROAST_MODEL_ID } from "@/app/lib/roast-models";
 
+const openRouterDefaults = {
+  baseUrl: "https://openrouter.ai/api/v1",
+  siteUrl: "http://localhost:3000",
+  appTitle: "Landing Page Roaster",
+};
+
 let client: OpenAI | null = null;
 
 export function getOpenRouterClient() {
@@ -12,10 +18,10 @@ export function getOpenRouterClient() {
 
   client ??= new OpenAI({
     apiKey,
-    baseURL: process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1",
+    baseURL: openRouterDefaults.baseUrl,
     defaultHeaders: {
-      "HTTP-Referer": process.env.OPENROUTER_SITE_URL ?? "http://localhost:3000",
-      "X-Title": process.env.OPENROUTER_APP_TITLE ?? "Landing Page Roaster",
+      "HTTP-Referer": openRouterDefaults.siteUrl,
+      "X-Title": openRouterDefaults.appTitle,
     },
   });
 
@@ -23,5 +29,5 @@ export function getOpenRouterClient() {
 }
 
 export function getRoastModel() {
-  return process.env.OPENROUTER_MODEL ?? DEFAULT_ROAST_MODEL_ID;
+  return DEFAULT_ROAST_MODEL_ID;
 }
