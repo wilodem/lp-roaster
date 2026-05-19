@@ -10,7 +10,7 @@ Landing Page Roaster is a rapid MVP for reviewing landing page screenshots with 
 - OpenRouter vision via the OpenAI-compatible SDK
 - Zod for request and response validation
 
-Implementation conventions for React/Next.js components, API boundaries, AI integration, and tests live in [docs/technical-guidelines.md](docs/technical-guidelines.md).
+Implementation conventions for React/Next.js components, API boundaries, AI integration, and tests live in [docs/technical-guidelines.md](docs/technical-guidelines.md). The lightweight Figma-to-repo handoff workflow lives in [docs/figma-repo-workflow.md](docs/figma-repo-workflow.md).
 
 ## Setup
 
