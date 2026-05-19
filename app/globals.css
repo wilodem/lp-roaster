@@ -855,6 +855,11 @@ p {
   padding-bottom: 16px;
 }
 
+.audience-line span {
+  color: var(--ink);
+  font-weight: 850;
+}
+
 .score-tile {
   display: grid;
   width: 104px;

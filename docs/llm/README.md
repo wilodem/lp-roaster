@@ -17,6 +17,8 @@ Selected `focusAreas` are treated as the hard scope for `findings`. Every `findi
 
 The prompt also sets section-specific voice rules: the verdict is lightly roasty, the roast and meme carry the main punchline, finding evidence stays factual, and recommendations, rewrites, and action-plan items stay practical rather than parody.
 
+The summary audience is inferred from visible page copy in 2-5 words. If the screenshot does not clearly signal an audience, the model should return `Unclear audience` instead of inventing a persona.
+
 The server adds `meta` after validation, because model and latency are runtime facts rather than model-generated content.
 
 ## Model Contract

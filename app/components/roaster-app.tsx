@@ -498,7 +498,9 @@ function Results({
         <div>
           <p className="eyebrow">Verdict / {analysis.summary.pageType}</p>
           <h2>{analysis.summary.verdict}</h2>
-          <p>{analysis.summary.audience}</p>
+          <p className="audience-line">
+            <span>Audience:</span> {analysis.summary.audience}
+          </p>
         </div>
         <CopyButton
           label="Copy roast"

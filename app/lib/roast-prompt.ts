@@ -42,6 +42,7 @@ export function buildRoastPrompt(options: { intensity: RoastIntensity; focusArea
     "- Do not invent template IDs, do not request external images, and do not mention Imgflip in the reason.",
     "",
     "Section voice rules:",
+    '- summary.audience: infer the target audience from visible page copy in 2-5 words; if unclear, return "Unclear audience"; do not invent personas not signaled by the screenshot.',
     "- summary.verdict: write one short, lightly roasty diagnostic line.",
     "- roast.title and roast.body: make this the main punchline and diagnosis.",
     "- findings[].issue: use a concise roast-flavored label.",

@@ -269,6 +269,9 @@ describe("focus area scope", () => {
 
     expect(prompt).toContain("Treat the selected focus areas as the hard review scope.");
     expect(prompt).toContain("Every findings[].category value must be one of the selected focus areas exactly.");
+    expect(prompt).toContain(
+      'summary.audience: infer the target audience from visible page copy in 2-5 words; if unclear, return "Unclear audience"; do not invent personas not signaled by the screenshot.',
+    );
     expect(prompt).toContain("summary.verdict: write one short, lightly roasty diagnostic line.");
     expect(prompt).toContain("findings[].evidence: state only raw visible evidence, with no joke.");
   });
